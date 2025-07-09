@@ -1,26 +1,24 @@
 name: npm publish
 
 on:
-  pull_request:
-    branches:
-      - master
-    paths:
-      - package.json
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout source code
-        uses: actions/checkout@v2
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v3
 
       - name: ⎔ Setup nodejs
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: lts/*
           registry-url: https://registry.npmjs.org/
 
-      - name: 🏗 Publish npm
+      - name: 🏗 Publish to npm
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
