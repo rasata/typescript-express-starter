@@ -10,7 +10,7 @@
       "legacyDecorator": true,
       "decoratorMetadata": true
     },
-    "target": "es2017",
+    "target": "esnext",
     "externalHelpers": false,
     "keepClassNames": true,
     "loose": false,
@@ -21,13 +21,13 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
-      "@config": ["config"],
+      "@config/*": ["config/*"],
       "@controllers/*": ["controllers/*"],
       "@dtos/*": ["dtos/*"],
       "@exceptions/*": ["exceptions/*"],
       "@interfaces/*": ["interfaces/*"],
       "@middlewares/*": ["middlewares/*"],
-      "@models/*": ["models/*"],
+      "@repositories/*": ["repositories/*"],
       "@routes/*": ["routes/*"],
       "@services/*": ["services/*"],
       "@utils/*": ["utils/*"]
