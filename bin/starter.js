@@ -45,13 +45,14 @@ const DEVTOOLS = [
     },
   },
   {
-    name: 'SWC',
-    value: 'swc',
-    files: ['.swcrc'],
+    name: 'tsup',
+    value: 'tsup',
+    files: ['tsup.config.ts'],
     pkgs: [],
-    devPkgs: ['@swc/core', '@swc/cli'],
+    devPkgs: ['tsup'],
     scripts: {
-      'build:swc': 'swc src -d dist --source-maps --copy-files',
+      'start:tsup': 'start": "node -r tsconfig-paths/register dist/index.js',
+      'build:tsup': 'tsup',
     },
   },
   {

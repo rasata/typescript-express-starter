@@ -1,25 +1,14 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "strict": true,
     "target": "es2020",
-    "lib": ["es2020", "esnext.asynciterable"],
-    "typeRoots": ["node_modules/@types"],
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "module": "commonjs",
-    "pretty": true,
-    "sourceMap": true,
-    "declaration": true,
+    "moduleResolution": "node",
     "outDir": "dist",
-    "allowJs": false,
-    "noEmit": false,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "lib": ["es2020", "esnext.asynciterable"],
+
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
@@ -33,7 +22,18 @@
       "@routes/*": ["routes/*"],
       "@services/*": ["services/*"],
       "@utils/*": ["utils/*"]
-    }
+    },
+
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "importHelpers": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "pretty": true,
+    "allowJs": false,
+    "noEmit": false
   },
   "include": ["src/**/*.ts", "src/**/*.json"],
   "exclude": ["node_modules", "dist", "coverage", "logs", "src/http"]
