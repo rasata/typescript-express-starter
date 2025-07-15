@@ -17,8 +17,8 @@ import fs from 'fs-extra';
 import { execa } from 'execa';
 import editJsonFile from 'edit-json-file';
 import { fileURLToPath } from 'url';
-import recast from 'recast';
-import * as tsParser from 'recast/parsers/typescript.js';
+// import recast from 'recast';
+// import * as tsParser from 'recast/parsers/typescript.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const templatesDir = path.join(__dirname, '../templates');
@@ -45,14 +45,13 @@ const DEVTOOLS = [
     },
   },
   {
-    name: 'tsup',
-    value: 'tsup',
-    files: ['tsup.config.ts'],
+    name: 'SWC',
+    value: 'swc',
+    files: ['.swcrc'],
     pkgs: [],
-    devPkgs: ['tsup'],
+    devPkgs: ['@swc/cli', '@swc/core'],
     scripts: {
-      'start:tsup': 'start": "node -r tsconfig-paths/register dist/index.js',
-      'build:tsup': 'tsup',
+      'build:swc': 'swc src -d dist --strip-leading-paths --copy-files --delete-dir-on-start',
     },
   },
   {
