@@ -10,18 +10,18 @@ describe('AuthService (with UserMemoryRepository)', () => {
   const testUser: User = {
     id: '1',
     email: 'authuser@example.com',
-    password: '', // 실제 해시로 교체
+    password: '', // will be replaced with actual hash
   };
 
   beforeEach(async () => {
     userRepo = new UsersRepository();
     testUser.password = await hash('plainpw', 10);
-    // 초기 유저 추가
+    // Add initial user
     await userRepo.save({ ...testUser });
-    authService = new AuthService(userRepo); // repo 주입
+    authService = new AuthService(userRepo); // inject repo
   });
 
-  it('signup: 신규 유저를 추가한다', async () => {
+  it('should sign up a new user', async () => {
     const dto: CreateUserDto = {
       email: 'newuser@example.com',
       password: 'newpassword123',
@@ -34,7 +34,7 @@ describe('AuthService (with UserMemoryRepository)', () => {
     expect(await compare(dto.password, found!.password)).toBe(true);
   });
 
-  it('signup: 중복 이메일은 에러 발생', async () => {
+  it('should throw an error if email is already in use', async () => {
     const dto: CreateUserDto = {
       email: testUser.email,
       password: 'anypw',
@@ -42,8 +42,8 @@ describe('AuthService (with UserMemoryRepository)', () => {
     await expect(authService.signup(dto)).rejects.toThrow(/already in use/);
   });
 
-  it('login: 정상 로그인시 user, cookie 반환', async () => {
-    // 비밀번호 해시 생성
+  it('should return user and cookie on successful login', async () => {
+    // Create user with hashed password
     const plainPassword = 'mySecret123';
     const email = 'loginuser@example.com';
     const hashed = await hash(plainPassword, 10);
@@ -54,16 +54,16 @@ describe('AuthService (with UserMemoryRepository)', () => {
     expect(result.cookie).toContain('Authorization=');
   });
 
-  it('login: 이메일 또는 비밀번호가 틀리면 에러', async () => {
-    // 없는 이메일
+  it('should throw an error if email or password is incorrect', async () => {
+    // Non-existing email
     await expect(authService.login({ email: 'nobody@example.com', password: 'xxx' })).rejects.toThrow(/Invalid email or password/i);
 
-    // 잘못된 비밀번호
+    // Incorrect password
     const email = testUser.email;
     await expect(authService.login({ email, password: 'wrongpw' })).rejects.toThrow(/password/i);
   });
 
-  it('logout: 정상 호출시 오류 없이 끝난다', async () => {
+  it('should successfully logout without errors', async () => {
     await expect(authService.logout(testUser)).resolves.toBeUndefined();
   });
 });

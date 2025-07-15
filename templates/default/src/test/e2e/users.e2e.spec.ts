@@ -6,25 +6,24 @@ describe('Users API', () => {
   const prefix = '/api/v1';
 
   beforeAll(() => {
-    server = createTestApp();
+    server = createTestApp(); // Initialize server with shared repository
   });
 
   beforeEach(() => {
-    resetUserDB();
+    resetUserDB(); // Reset repository before each test
   });
 
-  // 공통 유저 데이터
   const user = { email: 'user1@example.com', password: 'password123' };
   let userId: string;
 
-  it('should create a user', async () => {
+  it('should create a new user', async () => {
     const res = await request(server).post(`${prefix}/users`).send(user);
     expect(res.statusCode).toBe(201);
     expect(res.body.data.email).toBe(user.email);
     userId = res.body.data.id;
   });
 
-  it('should get all users', async () => {
+  it('should retrieve all users', async () => {
     await request(server).post(`${prefix}/users`).send(user);
     const res = await request(server).get(`${prefix}/users`);
     expect(res.statusCode).toBe(200);
@@ -32,8 +31,7 @@ describe('Users API', () => {
     expect(res.body.data[0].email).toBe(user.email);
   });
 
-  it('should get a user by id', async () => {
-    // 먼저 유저 생성
+  it('should retrieve a user by id', async () => {
     const createRes = await request(server).post(`${prefix}/users`).send(user);
     const id = createRes.body.data.id;
 
@@ -42,8 +40,7 @@ describe('Users API', () => {
     expect(res.body.data.email).toBe(user.email);
   });
 
-  it('should update a user', async () => {
-    // 유저 생성
+  it('should update user information', async () => {
     const createRes = await request(server).post(`${prefix}/users`).send(user);
     const id = createRes.body.data.id;
 
@@ -54,7 +51,6 @@ describe('Users API', () => {
   });
 
   it('should delete a user', async () => {
-    // 유저 생성
     const createRes = await request(server).post(`${prefix}/users`).send(user);
     const id = createRes.body.data.id;
 

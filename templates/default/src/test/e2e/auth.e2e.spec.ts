@@ -6,22 +6,22 @@ describe('Auth API', () => {
   const prefix = '/api/v1';
 
   beforeAll(() => {
-    server = createTestApp(); // 공유 리포지토리 사용
+    server = createTestApp(); // Use shared repository for testing
   });
 
   beforeEach(() => {
-    resetUserDB(); // 각 테스트 전에 리포지토리 초기화
+    resetUserDB(); // Reset repository before each test
   });
 
   const user = { email: 'authuser@example.com', password: 'authpassword123' };
 
-  it('should signup a user', async () => {
+  it('should successfully register a new user', async () => {
     const res = await request(server).post(`${prefix}/auth/signup`).send(user);
     expect(res.statusCode).toBe(201);
     expect(res.body.data.email).toBe(user.email);
   });
 
-  it('should login a user and set cookie', async () => {
+  it('should login a user and set a cookie', async () => {
     await request(server).post(`${prefix}/auth/signup`).send(user);
     const res = await request(server).post(`${prefix}/auth/login`).send(user);
     expect(res.statusCode).toBe(200);
