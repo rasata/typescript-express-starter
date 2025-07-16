@@ -5,7 +5,7 @@ import { SECRET_KEY } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
-import { IUsersRepository } from '@repositories/users.repository';
+import type { IUsersRepository } from '@repositories/users.repository';
 
 @Service()
 export class AuthService {

@@ -49,7 +49,7 @@ const DEVTOOLS = [
     value: 'tsup',
     files: ['tsup.config.ts'],
     pkgs: [],
-    devPkgs: ['tsup', '@swc/core'],
+    devPkgs: ['tsup'],
     scripts: {
       'start:tsup': 'node -r tsconfig-paths/register dist/server.js',
       'build:tsup': 'tsup',

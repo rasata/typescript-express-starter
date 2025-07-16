@@ -2,7 +2,7 @@ import { hash } from 'bcryptjs';
 import { Service, Inject } from 'typedi';
 import { User } from '@interfaces/users.interface';
 import { IUsersRepository } from '@repositories/users.repository';
-import { HttpException } from '@exceptions/httpException';
+import type { HttpException } from '@exceptions/httpException';
 
 @Service()
 export class UsersService {
