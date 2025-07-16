@@ -1,13 +1,13 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 
-export const packageManager = [
+export const PACKAGE_MANAGER = [
   { label: 'npm', value: 'npm' },
   { label: 'yarn', value: 'yarn' },
   { label: 'pnpm', value: 'pnpm' },
 ];
 
-export const devTools = [
+export const DEVTOOLS_VALUES = [
   {
     name: 'Prettier & ESLint',
     value: 'prettier',
@@ -54,7 +54,7 @@ export const devTools = [
   {
     name: 'Docker',
     value: 'docker',
-    files: ['.dockerignore', 'docker-compose.yml', 'Dockerfile.dev', 'Dockerfile.prod', 'nginx.conf'],
+    files: ['.dockerignore', 'Dockerfile.dev', 'Dockerfile.prod', 'nginx.conf'],
     pkgs: [],
     devPkgs: [],
     scripts: {},
@@ -95,6 +95,6 @@ export const devTools = [
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const templatesPkg = path.join(__dirname, '../templates');
+export const TEMPLATES = path.join(__dirname, '../templates');
 
-export const devtoolsPkg = path.join(__dirname, '../devtools');
+export const DEVTOOLS = path.join(__dirname, '../devtools');

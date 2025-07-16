@@ -16,7 +16,9 @@ import { execa } from 'execa';
 import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-import { packageManager, devTools, templatesPkg, devtoolsPkg } from './common.js';
+import { PACKAGE_MANAGER, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
+import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
+
 // import recast from 'recast';
 // import * as tsParser from 'recast/parsers/typescript.js';
 
@@ -70,7 +72,7 @@ function resolveDependencies(selected) {
   let changed = true;
   while (changed) {
     changed = false;
-    for (const tool of devTools) {
+    for (const tool of DEVTOOLS_VALUES) {
       if (all.has(tool.value) && tool.requires) {
         for (const req of tool.requires) {
           if (!all.has(req)) {
@@ -87,7 +89,7 @@ function resolveDependencies(selected) {
 // 파일 복사
 async function copyDevtoolFiles(devtool, destDir) {
   for (const file of devtool.files) {
-    const src = path.join(devtoolsPkg, devtool.value, file);
+    const src = path.join(DEVTOOLS, devtool.value, file);
     const dst = path.join(destDir, file);
     if (await fs.pathExists(src)) {
       await fs.copy(src, dst, { overwrite: true });
@@ -135,6 +137,22 @@ function printError(message, suggestion = null) {
   }
 }
 
+// docker-compose 생성
+async function generateCompose(template, destDir) {
+  // 템플릿에 맞는 DB 선택
+  const dbType = TEMPLATE_DB[template];
+  const dbSnippet = dbType ? DB_SERVICES[dbType] : '';
+
+  // docker-compose.yml 내용 생성
+  const composeYml = BASE_COMPOSE(dbSnippet);
+
+  // 파일로 기록
+  const filePath = path.join(destDir, 'docker-compose.yml');
+  await fs.writeFile(filePath, composeYml, 'utf8');
+
+  return dbType;
+}
+
 // Git init & 첫 커밋
 async function gitInitAndFirstCommit(destDir) {
   const doGit = await confirm({ message: 'Initialize git and make first commit?', initial: true });
@@ -164,7 +182,7 @@ async function main() {
   while (true) {
     pkgManager = await select({
       message: 'Which package manager do you want to use?',
-      options: packageManager,
+      options: PACKAGE_MANAGER,
       initialValue: 'npm',
     });
     if (isCancel(pkgManager)) return cancel('Aborted.');
@@ -174,7 +192,7 @@ async function main() {
   note(`Using: ${pkgManager}`);
 
   // 4. 템플릿 선택
-  const templateDirs = (await fs.readdir(templatesPkg)).filter(f => fs.statSync(path.join(templatesPkg, f)).isDirectory());
+  const templateDirs = (await fs.readdir(TEMPLATES)).filter(f => fs.statSync(path.join(TEMPLATES, f)).isDirectory());
   if (templateDirs.length === 0) {
     printError('No templates found!');
     return;
@@ -208,7 +226,7 @@ async function main() {
   // 6. 개발 도구 옵션 선택(멀티)
   let devtoolValues = await multiselect({
     message: 'Select additional developer tools:',
-    options: devTools.map(({ name, value, desc }) => ({ label: name, value, hint: desc })),
+    options: DEVTOOLS_VALUES.map(({ name, value, desc }) => ({ label: name, value, hint: desc })),
     initialValues: ['prettier', 'tsup'],
     required: false,
   });
@@ -218,9 +236,9 @@ async function main() {
   // === [진행] ===
 
   // [1] 템플릿 복사
-  const spinner = ora('Copying template...').start();
+  const spinner = ora('Copying template...\n').start();
   try {
-    await fs.copy(path.join(templatesPkg, template), destDir, { overwrite: true });
+    await fs.copy(path.join(TEMPLATES, template), destDir, { overwrite: true });
     spinner.succeed('Template copied!');
   } catch (e) {
     spinner.fail('Template copy failed!');
@@ -230,34 +248,41 @@ async function main() {
 
   // [2] 개발 도구 파일/패키지/스크립트/코드패치
   for (const val of devtoolValues) {
-    const tool = devTools.find(d => d.value === val);
+    const tool = DEVTOOLS_VALUES.find(d => d.value === val);
     if (!tool) continue;
 
-    spinner.start(`Copying ${tool.name} files...`);
+    spinner.start(`Copying ${tool.name} files...\n`);
     await copyDevtoolFiles(tool, destDir);
     spinner.succeed(`${tool.name} files copied!`);
 
     if (tool.pkgs?.length > 0) {
-      spinner.start(`Installing ${tool.name} packages (prod)...`);
+      spinner.start(`Installing ${tool.name} packages (prod)...\n`);
       await installPackages(tool.pkgs, pkgManager, false, destDir);
       spinner.succeed(`${tool.name} packages (prod) installed!`);
     }
 
     if (tool.devPkgs?.length > 0) {
-      spinner.start(`Installing ${tool.name} packages (dev)...`);
+      spinner.start(`Installing ${tool.name} packages (dev)...\n`);
       await installPackages(tool.devPkgs, pkgManager, true, destDir);
       spinner.succeed(`${tool.name} packages (dev) installed!`);
     }
 
     if (Object.keys(tool.scripts).length) {
-      spinner.start(`Updating scripts for ${tool.name}...`);
+      spinner.start(`Updating scripts for ${tool.name}...\n`);
       await updatePackageJson(tool.scripts, destDir);
       spinner.succeed(`${tool.name} scripts updated!`);
+    }
+
+    // [2-1] 개발 도구 - Docker 선택 한 경우, docker-compose.yml 생성
+    if (tool.value === 'docker') {
+      spinner.start(`Creating docker-compose ...\n`);
+      const dbType = await generateCompose(template, destDir);
+      spinner.succeed(`docker-compose.yml with ${dbType || 'no'} DB created!`);
     }
   }
 
   // [3] 템플릿 기본 패키지 설치
-  spinner.start(`Installing base dependencies with ${pkgManager}...`);
+  spinner.start(`Installing base dependencies with ${pkgManager}...\n`);
   await execa(pkgManager, ['install'], { cwd: destDir, stdio: 'inherit' });
   spinner.succeed('Base dependencies installed!');
 
