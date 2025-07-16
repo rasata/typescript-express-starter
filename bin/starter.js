@@ -68,7 +68,7 @@ const DEVTOOLS = [
   {
     name: 'Docker',
     value: 'docker',
-    files: ['.dockerignore', 'docker-compose.yml', 'Dockerfile.dev', 'Dockerfile.prod'],
+    files: ['.dockerignore', 'docker-compose.yml', 'Dockerfile.dev', 'Dockerfile.prod', 'nginx.conf'],
     pkgs: [],
     devPkgs: [],
     scripts: {},
