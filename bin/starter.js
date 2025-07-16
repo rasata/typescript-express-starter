@@ -45,6 +45,17 @@ const DEVTOOLS = [
     },
   },
   {
+    name: 'Tsup',
+    value: 'tsup',
+    files: ['tsup.config.ts'],
+    pkgs: [],
+    devPkgs: ['tsup', '@swc/core'],
+    scripts: {
+      'start:tsup': 'node -r tsconfig-paths/register dist/server.js',
+      'build:tsup': 'tsup',
+    },
+  },
+  {
     name: 'SWC',
     value: 'swc',
     files: ['.swcrc'],
