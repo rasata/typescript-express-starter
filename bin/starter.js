@@ -11,109 +11,19 @@
 
 import { select, multiselect, text, isCancel, intro, outro, cancel, note, confirm } from '@clack/prompts';
 import chalk from 'chalk';
+import editJsonFile from 'edit-json-file';
+import { execa } from 'execa';
+import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-import fs from 'fs-extra';
-import { execa } from 'execa';
-import editJsonFile from 'edit-json-file';
-import { fileURLToPath } from 'url';
+import { packageManager, devTools, templatesPkg, devtoolsPkg } from './common.js';
 // import recast from 'recast';
 // import * as tsParser from 'recast/parsers/typescript.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const templatesDir = path.join(__dirname, '../templates');
-const devtoolsDir = path.join(__dirname, '../devtools');
-
-const DEVTOOLS = [
-  {
-    name: 'Prettier & ESLint',
-    value: 'prettier',
-    files: ['.prettierrc', '.prettierignore', '.eslintrc', '.eslintignore'],
-    pkgs: [],
-    devPkgs: [
-      'prettier',
-      'eslint',
-      '@typescript-eslint/eslint-plugin',
-      '@typescript-eslint/parser',
-      'eslint-config-prettier',
-      'eslint-plugin-prettier',
-    ],
-    scripts: {
-      lint: 'eslint --ignore-path .gitignore --ext .ts src/',
-      'lint:fix': 'npm run lint -- --fix',
-      format: 'prettier --check .',
-    },
-    recommand: true,
-  },
-  {
-    name: 'tsup',
-    value: 'tsup',
-    files: ['tsup.config.ts'],
-    pkgs: [],
-    devPkgs: ['tsup'],
-    scripts: {
-      'start:tsup': 'node -r tsconfig-paths/register dist/server.js',
-      'build:tsup': 'tsup',
-    },
-    recommand: true,
-  },
-  {
-    name: 'SWC',
-    value: 'swc',
-    files: ['.swcrc'],
-    pkgs: [],
-    devPkgs: ['@swc/cli', '@swc/core'],
-    scripts: {
-      'build:swc': 'swc src -d dist --strip-leading-paths --copy-files --delete-dir-on-start',
-    },
-    recommand: false,
-  },
-  {
-    name: 'Docker',
-    value: 'docker',
-    files: ['.dockerignore', 'docker-compose.yml', 'Dockerfile.dev', 'Dockerfile.prod', 'nginx.conf'],
-    pkgs: [],
-    devPkgs: [],
-    scripts: {},
-    recommand: false,
-  },
-  {
-    name: 'Husky & Lint-Staged',
-    value: 'husky',
-    files: ['.huskyrc', 'lint-staged.config.js'],
-    pkgs: [],
-    devPkgs: ['husky', 'lint-staged'],
-    scripts: { prepare: 'husky install' },
-    requires: [],
-    recommand: false,
-  },
-  {
-    name: 'PM2',
-    value: 'pm2',
-    files: ['ecosystem.config.js'],
-    pkgs: [],
-    devPkgs: ['pm2'],
-    scripts: {
-      'deploy:prod': 'npm run build && pm2 start ecosystem.config.js --only prod',
-      'deploy:dev': 'pm2 start ecosystem.config.js --only dev',
-    },
-    recommand: false,
-  },
-  {
-    name: 'GitHub Actions',
-    value: 'github',
-    files: ['.github/workflows/ci.yml'],
-    pkgs: [],
-    devPkgs: [],
-    scripts: {},
-    recommand: false,
-  },
-];
-
 // ========== [공통 함수들] ==========
 
-// Node 버전 체크
-function checkNodeVersion(min = 18) {
+// Node 버전 체크 (16+)
+function checkNodeVersion(min = 16) {
   const major = parseInt(process.versions.node.split('.')[0], 10);
   if (major < min) {
     console.error(chalk.red(`Node.js ${min}+ required. You have ${process.versions.node}.`));
@@ -160,7 +70,7 @@ function resolveDependencies(selected) {
   let changed = true;
   while (changed) {
     changed = false;
-    for (const tool of DEVTOOLS) {
+    for (const tool of devTools) {
       if (all.has(tool.value) && tool.requires) {
         for (const req of tool.requires) {
           if (!all.has(req)) {
@@ -177,7 +87,7 @@ function resolveDependencies(selected) {
 // 파일 복사
 async function copyDevtoolFiles(devtool, destDir) {
   for (const file of devtool.files) {
-    const src = path.join(devtoolsDir, devtool.value, file);
+    const src = path.join(devtoolsPkg, devtool.value, file);
     const dst = path.join(destDir, file);
     if (await fs.pathExists(src)) {
       await fs.copy(src, dst, { overwrite: true });
@@ -242,7 +152,7 @@ async function gitInitAndFirstCommit(destDir) {
 // ========== [메인 CLI 실행 흐름] ==========
 async function main() {
   // 1. Node 버전 체크
-  checkNodeVersion(18);
+  checkNodeVersion(16);
 
   // 2. CLI 최신버전 안내 (자신의 패키지 이름/버전 직접 입력)
   await checkForUpdate('typescript-express-starter', '10.2.2');
@@ -254,11 +164,7 @@ async function main() {
   while (true) {
     pkgManager = await select({
       message: 'Which package manager do you want to use?',
-      options: [
-        { label: 'npm', value: 'npm' },
-        { label: 'yarn', value: 'yarn' },
-        { label: 'pnpm', value: 'pnpm' },
-      ],
+      options: packageManager,
       initialValue: 'npm',
     });
     if (isCancel(pkgManager)) return cancel('Aborted.');
@@ -268,7 +174,7 @@ async function main() {
   note(`Using: ${pkgManager}`);
 
   // 4. 템플릿 선택
-  const templateDirs = (await fs.readdir(templatesDir)).filter(f => fs.statSync(path.join(templatesDir, f)).isDirectory());
+  const templateDirs = (await fs.readdir(templatesPkg)).filter(f => fs.statSync(path.join(templatesPkg, f)).isDirectory());
   if (templateDirs.length === 0) {
     printError('No templates found!');
     return;
@@ -302,7 +208,7 @@ async function main() {
   // 6. 개발 도구 옵션 선택(멀티)
   let devtoolValues = await multiselect({
     message: 'Select additional developer tools:',
-    options: DEVTOOLS.map(({ name, value, recommand }) => ({ label: name, value, hint: recommand && 'recommand' })),
+    options: devTools.map(({ name, value, desc }) => ({ label: name, value, hint: desc })),
     initialValues: ['prettier', 'tsup'],
     required: false,
   });
@@ -314,7 +220,7 @@ async function main() {
   // [1] 템플릿 복사
   const spinner = ora('Copying template...').start();
   try {
-    await fs.copy(path.join(templatesDir, template), destDir, { overwrite: true });
+    await fs.copy(path.join(templatesPkg, template), destDir, { overwrite: true });
     spinner.succeed('Template copied!');
   } catch (e) {
     spinner.fail('Template copy failed!');
@@ -324,7 +230,7 @@ async function main() {
 
   // [2] 개발 도구 파일/패키지/스크립트/코드패치
   for (const val of devtoolValues) {
-    const tool = DEVTOOLS.find(d => d.value === val);
+    const tool = devTools.find(d => d.value === val);
     if (!tool) continue;
 
     spinner.start(`Copying ${tool.name} files...`);
