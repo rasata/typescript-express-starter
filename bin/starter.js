@@ -43,9 +43,10 @@ const DEVTOOLS = [
       'lint:fix': 'npm run lint -- --fix',
       format: 'prettier --check .',
     },
+    recommand: true,
   },
   {
-    name: 'Tsup',
+    name: 'tsup',
     value: 'tsup',
     files: ['tsup.config.ts'],
     pkgs: [],
@@ -54,6 +55,7 @@ const DEVTOOLS = [
       'start:tsup': 'node -r tsconfig-paths/register dist/server.js',
       'build:tsup': 'tsup',
     },
+    recommand: true,
   },
   {
     name: 'SWC',
@@ -64,6 +66,7 @@ const DEVTOOLS = [
     scripts: {
       'build:swc': 'swc src -d dist --strip-leading-paths --copy-files --delete-dir-on-start',
     },
+    recommand: false,
   },
   {
     name: 'Docker',
@@ -72,6 +75,7 @@ const DEVTOOLS = [
     pkgs: [],
     devPkgs: [],
     scripts: {},
+    recommand: false,
   },
   {
     name: 'Husky & Lint-Staged',
@@ -81,6 +85,7 @@ const DEVTOOLS = [
     devPkgs: ['husky', 'lint-staged'],
     scripts: { prepare: 'husky install' },
     requires: [],
+    recommand: false,
   },
   {
     name: 'PM2',
@@ -92,6 +97,7 @@ const DEVTOOLS = [
       'deploy:prod': 'npm run build && pm2 start ecosystem.config.js --only prod',
       'deploy:dev': 'pm2 start ecosystem.config.js --only dev',
     },
+    recommand: false,
   },
   {
     name: 'GitHub Actions',
@@ -100,6 +106,7 @@ const DEVTOOLS = [
     pkgs: [],
     devPkgs: [],
     scripts: {},
+    recommand: false,
   },
 ];
 
@@ -252,7 +259,7 @@ async function main() {
         { label: 'yarn', value: 'yarn' },
         { label: 'pnpm', value: 'pnpm' },
       ],
-      initial: 0,
+      initialValue: 'npm',
     });
     if (isCancel(pkgManager)) return cancel('Aborted.');
     if (await checkPkgManagerInstalled(pkgManager)) break;
@@ -269,7 +276,7 @@ async function main() {
   const template = await select({
     message: 'Choose a template:',
     options: templateDirs.map(t => ({ label: t, value: t })),
-    initial: 0,
+    initialValue: 'default',
   });
   if (isCancel(template)) return cancel('Aborted.');
 
@@ -295,7 +302,9 @@ async function main() {
   // 6. 개발 도구 옵션 선택(멀티)
   let devtoolValues = await multiselect({
     message: 'Select additional developer tools:',
-    options: DEVTOOLS.map(({ name, value }) => ({ label: name, value })),
+    options: DEVTOOLS.map(({ name, value, recommand }) => ({ label: name, value, hint: recommand && 'recommand' })),
+    initialValues: ['prettier', 'tsup'],
+    required: false,
   });
   if (isCancel(devtoolValues)) return cancel('Aborted.');
   devtoolValues = resolveDependencies(devtoolValues);
@@ -347,7 +356,7 @@ async function main() {
   spinner.succeed('Base dependencies installed!');
 
   // [4] git 첫 커밋 옵션
-  // await gitInitAndFirstCommit(destDir);
+  await gitInitAndFirstCommit(destDir);
 
   outro(chalk.greenBright('\n🎉 Project setup complete!\n'));
   console.log(chalk.cyan(`   $ cd ${projectName}`));
