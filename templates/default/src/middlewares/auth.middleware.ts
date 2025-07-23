@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import { container } from 'tsyringe';
 import { SECRET_KEY } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
-import { Container } from 'typedi';
-import { IUsersRepository } from '@repositories/users.repository';
+import { UsersRepository } from '@repositories/users.repository';
 
 const getAuthorization = (req: RequestWithUser) => {
   const cookie = req.cookies['Authorization'];
@@ -37,7 +37,7 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
     }
 
     // 타입 일치 유의 (number/string)
-    const userRepo = Container.get<IUsersRepository>('UsersRepository');
+    const userRepo = container.resolve(UsersRepository);
     const findUser = await userRepo.findById(String(payload.id));
     if (!findUser) return next(new HttpException(401, 'User not found with this token'));
 

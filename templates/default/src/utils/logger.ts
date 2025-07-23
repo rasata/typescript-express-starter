@@ -1,76 +1,57 @@
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import winston from 'winston';
-import winstonDaily from 'winston-daily-rotate-file';
+import pino from 'pino';
 import { LOG_DIR } from '@config/env';
 
+const logDir: string = join(__dirname, LOG_DIR || '/logs');
+if (!existsSync(logDir)) {
+  mkdirSync(logDir, { recursive: true });
+}
+
+// 파일 로깅용 경로
+const debugLogPath = join(logDir, 'debug.log');
+const errorLogPath = join(logDir, 'error.log');
+
+// 로그 레벨 및 환경 설정
+const isProd = process.env.NODE_ENV === 'production';
 const logLevel = process.env.LOG_LEVEL || 'info';
 
-// logs dir
-const logDir: string = join(__dirname, LOG_DIR || '/logs');
+// Pino 인스턴스
+export const logger = pino(
+  {
+    level: logLevel,
+    formatters: {
+      level: label => ({ level: label }),
+    },
+    transport: !isProd
+      ? {
+          // 개발환경: 예쁜 콘솔 출력
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'yyyy-mm-dd HH:MM:ss',
+            ignore: 'pid,hostname',
+          },
+        }
+      : undefined,
+  },
+  isProd ? pino.destination(debugLogPath) : undefined,
+);
 
-if (!existsSync(logDir)) {
-  mkdirSync(logDir);
-}
+// 파일 로깅은 에러만 별도 핸들러로 예시
+export const errorLogger = isProd ? pino(pino.destination(errorLogPath)) : logger;
 
-// Define log format
-const logFormat = winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`);
+// morgan stream 인터페이스
+export const stream = {
+  write: (msg: string) => logger.info(msg.trim()),
+};
 
-/*
- * Log Level
- * error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
- */
-const logger = winston.createLogger({
-  level: logLevel,
-  format: winston.format.combine(winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), logFormat),
-  transports: [
-    // debug log setting
-    new winstonDaily({
-      level: 'debug',
-      datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/debug', // log file /logs/debug/*.log in save
-      filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
-      json: false,
-      zippedArchive: true,
-    }),
-    // error log setting
-    new winstonDaily({
-      level: 'error',
-      datePattern: 'YYYY-MM-DD',
-      dirname: logDir + '/error', // log file /logs/error/*.log in save
-      filename: `%DATE%.log`,
-      maxFiles: 30, // 30 Days saved
-      handleExceptions: true,
-      json: false,
-      zippedArchive: true,
-    }),
-  ],
-  exitOnError: false, // uncaughtException 시 종료 방지
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.splat(), winston.format.colorize()),
-    }),
-  );
-}
-
+// 전역 에러 핸들링 (필요하면)
 process.on('uncaughtException', err => {
   logger.error(`Uncaught Exception: ${err.message}`, { stack: err.stack });
   process.exit(1);
 });
-
 process.on('unhandledRejection', reason => {
   logger.error(`Unhandled Rejection: ${JSON.stringify(reason)}`);
   process.exit(1);
 });
-
-const stream = {
-  write: (message: string) => {
-    logger.info(message.substring(0, message.lastIndexOf('\n')));
-  },
-};
-
-export { logger, stream };

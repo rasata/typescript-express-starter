@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createTestApp, resetUserDB } from '@/test/setup';
 
 describe('Users API', () => {
@@ -55,13 +56,12 @@ describe('Users API', () => {
     const id = createRes.body.data.id;
 
     const res = await request(server).delete(`${prefix}/users/${id}`);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.message).toBe('deleted');
+    expect(res.statusCode).toBe(204);
   });
 
   it('should return 404 if user does not exist', async () => {
     const res = await request(server).get(`${prefix}/users/invalid-id`);
     expect(res.statusCode).toBe(404);
-    expect(res.body.message).toMatch(/not exist|not found/i);
+    expect(res.body.error.message).toMatch(/not exist|not found/i);
   });
 });

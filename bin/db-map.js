@@ -1,4 +1,3 @@
-// db-map.js
 export const TEMPLATE_DB = {
   default: null,
   graphql: 'postgres',

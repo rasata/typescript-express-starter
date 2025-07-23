@@ -1,12 +1,13 @@
 import { hash } from 'bcryptjs';
-import { Service, Inject } from 'typedi';
+import { injectable, inject } from 'tsyringe';
 import { HttpException } from '@exceptions/httpException';
 import { User } from '@interfaces/users.interface';
+import { UsersRepository } from '@repositories/users.repository';
 import type { IUsersRepository } from '@repositories/users.repository';
 
-@Service()
+@injectable()
 export class UsersService {
-  constructor(@Inject('UsersRepository') private usersRepository: IUsersRepository) {}
+  constructor(@inject(UsersRepository) private usersRepository: IUsersRepository) {}
 
   async getAllUsers(): Promise<User[]> {
     return this.usersRepository.findAll();
@@ -24,7 +25,8 @@ export class UsersService {
 
     const hashedPassword = await hash(user.password, 10);
     const created: User = { id: String(Date.now()), email: user.email, password: hashedPassword };
-    return await this.usersRepository.save(created);
+    await this.usersRepository.save(created);
+    return created;
   }
 
   async updateUser(id: string, update: User): Promise<User> {

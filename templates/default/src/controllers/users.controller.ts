@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { Service } from 'typedi';
+import { injectable, inject } from 'tsyringe';
 import { User } from '@interfaces/users.interface';
 import { UsersService } from '@services/users.service';
 
-@Service()
+@injectable()
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(@inject(UsersService) private readonly userService: UsersService) {}
 
   getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const users = await this.userService.getAllUsers();
-      res.json({ data: users });
+      res.json({ data: users, message: 'findAll' });
     } catch (e) {
       next(e);
     }
@@ -20,7 +20,7 @@ export class UsersController {
     try {
       const userId: string = req.params.id;
       const user = await this.userService.getUserById(userId);
-      res.json({ data: user });
+      res.json({ data: user, message: 'findById' });
     } catch (e) {
       next(e);
     }
@@ -30,7 +30,7 @@ export class UsersController {
     try {
       const userData: User = req.body;
       const user = await this.userService.createUser(userData);
-      res.status(201).json({ data: user });
+      res.status(201).json({ data: user, message: 'create' });
     } catch (e) {
       next(e);
     }
@@ -41,7 +41,7 @@ export class UsersController {
       const userId: string = req.params.id;
       const userData: User = req.body;
       const user = await this.userService.updateUser(userId, userData);
-      res.json({ data: user });
+      res.json({ data: user, message: 'update' });
     } catch (e) {
       next(e);
     }
@@ -51,7 +51,7 @@ export class UsersController {
     try {
       const userId: string = req.params.id;
       await this.userService.deleteUser(userId);
-      res.status(204).send();
+      res.status(204).json({ message: 'delete' });
     } catch (e) {
       next(e);
     }

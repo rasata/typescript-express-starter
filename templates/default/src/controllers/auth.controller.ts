@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { Service } from 'typedi';
+import { injectable, inject } from 'tsyringe';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 import { AuthService } from '@services/auth.service';
 
-@Service()
+@injectable()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(@inject(AuthService) private readonly authService: AuthService) {}
 
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -36,7 +36,6 @@ export class AuthController {
       const user = userReq.user;
       await this.authService.logout(user);
 
-      // res.setHeader('Set-Cookie', ['Authorization=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax']);
       res.clearCookie('Authorization', {
         httpOnly: true,
         path: '/',

@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { createTestApp, resetUserDB } from '@/test/setup';
 
 describe('Auth API', () => {

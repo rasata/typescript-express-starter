@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { User } from '@interfaces/users.interface';
 import { UsersRepository } from '@repositories/users.repository';
 import { UsersService } from '@services/users.service';

@@ -1,4 +1,5 @@
 import { compare, hash } from 'bcryptjs';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import { UsersRepository } from '@repositories/users.repository';

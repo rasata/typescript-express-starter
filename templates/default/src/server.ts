@@ -1,4 +1,5 @@
-import { Container } from 'typedi';
+import 'reflect-metadata';
+import { container } from 'tsyringe';
 import App from '@/app';
 import { validateEnv } from '@config/validateEnv';
 import { UsersRepository } from '@repositories/users.repository';
@@ -9,10 +10,10 @@ import { UsersRoute } from '@routes/users.route';
 validateEnv();
 
 // DI 등록
-Container.set('UsersRepository', new UsersRepository());
+container.registerInstance(UsersRepository, new UsersRepository());
 
 // 라우트 모듈을 필요에 따라 동적으로 배열화 가능
-const routes = [Container.get(UsersRoute), Container.get(AuthRoute)];
+const routes = [container.resolve(UsersRoute), container.resolve(AuthRoute)];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달
 const appInstance = new App(routes);

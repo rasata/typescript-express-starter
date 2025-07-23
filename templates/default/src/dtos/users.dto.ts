@@ -1,22 +1,20 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsOptional } from 'class-validator';
+import { z } from 'zod';
 
-export class PasswordDto {
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(9, { message: 'Password must be at least 9 characters long.' })
-  @MaxLength(32, { message: 'Password must be at most 32 characters long.' })
-  public password!: string;
-}
+// 비밀번호 공통 스키마
+export const passwordSchema = z
+  .string()
+  .min(9, { message: 'Password must be at least 9 characters long.' })
+  .max(32, { message: 'Password must be at most 32 characters long.' });
 
-export class CreateUserDto extends PasswordDto {
-  @IsEmail({}, { message: 'Invalid email format.' })
-  public email!: string;
-}
+// 회원가입 DTO (signup, login 공용)
+export const createUserSchema = z.object({
+  email: z.string().email({ message: 'Invalid email format.' }),
+  password: passwordSchema,
+});
 
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  @MinLength(9, { message: 'Password must be at least 9 characters long.' })
-  @MaxLength(32, { message: 'Password must be at most 32 characters long.' })
-  public password?: string;
-}
+export type CreateUserDto = z.infer<typeof createUserSchema>;
+
+// 수정 DTO (패스워드만 optional)
+export const updateUserSchema = createUserSchema.partial();
+
+export type UpdateUserDto = z.infer<typeof updateUserSchema>;

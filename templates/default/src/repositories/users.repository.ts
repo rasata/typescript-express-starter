@@ -1,4 +1,4 @@
-import { Service } from 'typedi';
+import { singleton } from 'tsyringe';
 import { User } from '@interfaces/users.interface';
 
 export interface IUsersRepository {
@@ -10,7 +10,7 @@ export interface IUsersRepository {
   delete(id: string): Promise<boolean>;
 }
 
-@Service('UsersRepository')
+@singleton()
 export class UsersRepository implements IUsersRepository {
   private users: User[] = [];
 

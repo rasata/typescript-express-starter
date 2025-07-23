@@ -1,15 +1,16 @@
 import { hash, compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
-import { Service, Inject } from 'typedi';
+import { injectable, inject } from 'tsyringe';
 import { SECRET_KEY } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
+import { UsersRepository } from '@repositories/users.repository';
 import type { IUsersRepository } from '@repositories/users.repository';
 
-@Service()
+@injectable()
 export class AuthService {
-  constructor(@Inject('UsersRepository') private usersRepository: IUsersRepository) {}
+  constructor(@inject(UsersRepository) private usersRepository: IUsersRepository) {}
 
   private createToken(user: User): TokenData {
     if (!SECRET_KEY) throw new Error('SECRET_KEY is not defined');
