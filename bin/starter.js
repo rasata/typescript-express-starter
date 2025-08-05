@@ -9,7 +9,16 @@
  * Made with ❤️ by AGUMON 🦖
  *****************************************************************/
 
-import { select, multiselect, text, isCancel, intro, outro, cancel, note, confirm } from '@clack/prompts';
+import {
+  select,
+  text,
+  isCancel,
+  intro,
+  outro,
+  cancel,
+  note,
+  confirm,
+} from '@clack/prompts';
 import chalk from 'chalk';
 import editJsonFile from 'edit-json-file';
 import { execa } from 'execa';
@@ -18,9 +27,6 @@ import ora from 'ora';
 import path from 'path';
 import { PACKAGE_MANAGER, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
 import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
-
-// import recast from 'recast';
-// import * as tsParser from 'recast/parsers/typescript.js';
 
 // ========== [공통 함수들] ==========
 
@@ -33,7 +39,7 @@ function checkNodeVersion(min = 16) {
   }
 }
 
-// 최신 CLI 버전 체크 (배포용 이름으로 변경 필요!)
+// 최신 CLI 버전 체크 
 async function checkForUpdate(pkgName, localVersion) {
   try {
     const { stdout } = await execa('npm', ['view', pkgName, 'version']);
@@ -41,9 +47,7 @@ async function checkForUpdate(pkgName, localVersion) {
     if (latest !== localVersion) {
       console.log(chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})\n  $ npm i -g ${pkgName}`));
     }
-  } catch {
-    /* 무시 */
-  }
+  } catch { }
 }
 
 // 패키지매니저 글로벌 설치여부
@@ -104,8 +108,7 @@ async function installPackages(pkgs, pkgManager, dev = true, destDir = process.c
   const pkgsWithLatest = [];
   for (const pkg of pkgs) {
     const version = await getLatestVersion(pkg);
-    if (version) pkgsWithLatest.push(`${pkg}@${version}`);
-    else pkgsWithLatest.push(pkg);
+    pkgsWithLatest.push(version ? `${pkg}@${version}` : pkg);
   }
   const installCmd =
     pkgManager === 'npm'
@@ -122,14 +125,12 @@ async function updatePackageJson(scripts, destDir) {
   const pkgPath = path.join(destDir, 'package.json');
   const file = editJsonFile(pkgPath, { autosave: true });
   Object.entries(scripts).forEach(([k, v]) => file.set(`scripts.${k}`, v));
-  // Husky 자동 추가 예시
   if (!file.get('scripts.prepare') && fs.existsSync(path.join(destDir, '.huskyrc'))) {
     file.set('scripts.prepare', 'husky install');
   }
   file.save();
 }
 
-// 친절한 에러/경고 안내
 function printError(message, suggestion = null) {
   console.log(chalk.bgRed.white(' ERROR '), chalk.red(message));
   if (suggestion) {
@@ -139,17 +140,11 @@ function printError(message, suggestion = null) {
 
 // docker-compose 생성
 async function generateCompose(template, destDir) {
-  // 템플릿에 맞는 DB 선택
   const dbType = TEMPLATE_DB[template];
   const dbSnippet = dbType ? DB_SERVICES[dbType] : '';
-
-  // docker-compose.yml 내용 생성
   const composeYml = BASE_COMPOSE(dbSnippet);
-
-  // 파일로 기록
   const filePath = path.join(destDir, 'docker-compose.yml');
   await fs.writeFile(filePath, composeYml, 'utf8');
-
   return dbType;
 }
 
@@ -172,10 +167,12 @@ async function main() {
   // 1. Node 버전 체크
   checkNodeVersion(16);
 
-  // 2. CLI 최신버전 안내 (자신의 패키지 이름/버전 직접 입력)
+  // 2. CLI 최신버전 안내
   await checkForUpdate('typescript-express-starter', '10.2.2');
 
-  intro(chalk.cyanBright.bold('✨ TypeScript Express Starter'));
+  const gradientBanner =
+    '\x1B[38;2;66;211;146m✨\x1B[39m\x1B[38;2;66;211;146m \x1B[39m\x1B[38;2;66;211;146mT\x1B[39m\x1B[38;2;66;211;146my\x1B[39m\x1B[38;2;66;211;146mp\x1B[39m\x1B[38;2;66;211;146me\x1B[39m\x1B[38;2;67;209;149mS\x1B[39m\x1B[38;2;68;206;152mc\x1B[39m\x1B[38;2;69;204;155mr\x1B[39m\x1B[38;2;70;201;158mi\x1B[39m\x1B[38;2;71;199;162mp\x1B[39m\x1B[38;2;72;196;165mt\x1B[39m\x1B[38;2;73;194;168m \x1B[39m\x1B[38;2;74;192;171mE\x1B[39m\x1B[38;2;75;189;174mx\x1B[39m\x1B[38;2;76;187;177mp\x1B[39m\x1B[38;2;77;184;180mr\x1B[39m\x1B[38;2;78;182;183me\x1B[39m\x1B[38;2;79;179;186ms\x1B[39m\x1B[38;2;80;177;190ms\x1B[39m\x1B[38;2;81;175;193m \x1B[39m\x1B[38;2;82;172;196mS\x1B[39m\x1B[38;2;83;170;199mt\x1B[39m\x1B[38;2;84;167;202ma\x1B[39m\x1B[38;2;85;165;205mr\x1B[39m\x1B[38;2;86;162;208mt\x1B[39m\x1B[38;2;87;160;211me\x1B[39m\x1B[38;2;88;158;215mr\x1B[39m';
+  intro(gradientBanner);
 
   // 3. 패키지 매니저 선택 + 글로벌 설치 확인
   let pkgManager;
@@ -185,7 +182,7 @@ async function main() {
       options: PACKAGE_MANAGER,
       initialValue: 'npm',
     });
-    if (isCancel(pkgManager)) return cancel('Aborted.');
+    if (isCancel(pkgManager)) return cancel('❌ Aborted.');
     if (await checkPkgManagerInstalled(pkgManager)) break;
     printError(`${pkgManager} is not installed globally! Please install it first.`);
   }
@@ -193,50 +190,62 @@ async function main() {
 
   // 4. 템플릿 선택
   const templateDirs = (await fs.readdir(TEMPLATES)).filter(f => fs.statSync(path.join(TEMPLATES, f)).isDirectory());
-  if (templateDirs.length === 0) {
-    printError('No templates found!');
-    return;
-  }
+  if (templateDirs.length === 0) return printError('No templates found!');
+
   const template = await select({
     message: 'Choose a template:',
     options: templateDirs.map(t => ({ label: t, value: t })),
     initialValue: 'default',
   });
-  if (isCancel(template)) return cancel('Aborted.');
+  if (isCancel(template)) return cancel('❌ Aborted.');
 
-  // 5. 프로젝트명 (중복체크/덮어쓰기)
-  let projectName;
-  let destDir;
+  // 5. 프로젝트명 입력 (중복체크/덮어쓰기)
+  let projectName, destDir;
   while (true) {
     projectName = await text({
       message: 'Enter your project name:',
       initial: 'my-app',
       validate: val => (!val ? 'Project name is required' : undefined),
     });
-    if (isCancel(projectName)) return cancel('Aborted.');
+    if (isCancel(projectName)) return cancel('❌ Aborted.');
     destDir = path.resolve(process.cwd(), projectName);
     if (await fs.pathExists(destDir)) {
       const overwrite = await confirm({ message: `Directory "${projectName}" already exists. Overwrite?` });
       if (overwrite) break;
-      else continue;
-    }
-    break;
+    } else break;
   }
 
-  // 6. 개발 도구 옵션 선택(멀티)
-  let devtoolValues = await multiselect({
-    message: 'Select additional developer tools:',
-    options: DEVTOOLS_VALUES.map(({ name, value, desc }) => ({ label: name, value, hint: desc })),
-    initialValues: ['prettier', 'tsup'],
-    required: false,
-  });
-  if (isCancel(devtoolValues)) return cancel('Aborted.');
+  // 6. 개발 도구 옵션 선택 (category 기준으로 그룹화)
+  const groupedDevtools = DEVTOOLS_VALUES.reduce((acc, tool) => {
+    const cat = tool.category || 'Others';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(tool);
+    return acc;
+  }, {});
+
+  // 6-1. 개발 도구 옵션 선택 (category별 하나씩만 선택하는 방식)
+  let devtoolValues = [];
+  for (const [category, tools] of Object.entries(groupedDevtools)) {
+    const picked = await select({
+      message: `Select a tool for "${category}":`,
+      options: [
+        { label: 'None', value: null },
+        ...tools.map(({ name, value, desc }) => ({
+          label: `${name} (${desc})`,
+          value,
+        })),
+      ],
+      initialValue: null,
+    });
+    if (isCancel(picked)) return cancel('❌ Aborted.');
+    if (picked) devtoolValues.push(picked);
+  }
   devtoolValues = resolveDependencies(devtoolValues);
 
   // === [진행] ===
 
   // [1] 템플릿 복사
-  const spinner = ora('Copying template...\n').start();
+  const spinner = ora('Copying template...').start();
   try {
     await fs.copy(path.join(TEMPLATES, template), destDir, { overwrite: true });
     spinner.succeed('Template copied!');
@@ -246,45 +255,45 @@ async function main() {
     return process.exit(1);
   }
 
+  // [1-1] Testing 도구를 선택한 경우에만 /src/test 예제 복사
+  const testDevtool = devtoolValues
+    .map(val => DEVTOOLS_VALUES.find(d => d.value === val))
+    .find(tool => tool && tool.category === 'Testing');
+
+  if (testDevtool) {
+    const devtoolTestDir = path.join(DEVTOOLS, testDevtool.value, 'src', 'test');
+    const projectTestDir = path.join(destDir, 'src', 'test');
+    if (await fs.pathExists(devtoolTestDir)) {
+      await fs.copy(devtoolTestDir, projectTestDir, { overwrite: true });
+      console.log(chalk.gray(`  ⎯ test files for ${testDevtool.name} copied.`));
+    }
+  }
+
   // [2] 개발 도구 파일/패키지/스크립트/코드패치
   for (const val of devtoolValues) {
     const tool = DEVTOOLS_VALUES.find(d => d.value === val);
     if (!tool) continue;
 
-    spinner.start(`Copying ${tool.name} files...\n`);
+    spinner.start(`Setting up ${tool.name}...`);
     await copyDevtoolFiles(tool, destDir);
-    spinner.succeed(`${tool.name} files copied!`);
 
-    if (tool.pkgs?.length > 0) {
-      spinner.start(`Installing ${tool.name} packages (prod)...\n`);
-      await installPackages(tool.pkgs, pkgManager, false, destDir);
-      spinner.succeed(`${tool.name} packages (prod) installed!`);
-    }
+    // [2-1] 개발 도구 - 패키지 설치
+    if (tool.pkgs?.length > 0) await installPackages(tool.pkgs, pkgManager, false, destDir);
+    if (tool.devPkgs?.length > 0) await installPackages(tool.devPkgs, pkgManager, true, destDir);
 
-    if (tool.devPkgs?.length > 0) {
-      spinner.start(`Installing ${tool.name} packages (dev)...\n`);
-      await installPackages(tool.devPkgs, pkgManager, true, destDir);
-      spinner.succeed(`${tool.name} packages (dev) installed!`);
-    }
+    // [2-2] 개발 도구 - 스크립트 추가 등
+    if (Object.keys(tool.scripts).length) await updatePackageJson(tool.scripts, destDir);
 
-    if (Object.keys(tool.scripts).length) {
-      spinner.start(`Updating scripts for ${tool.name}...\n`);
-      await updatePackageJson(tool.scripts, destDir);
-      spinner.succeed(`${tool.name} scripts updated!`);
-    }
-
-    // [2-1] 개발 도구 - Docker 선택 한 경우, docker-compose.yml 생성
-    if (tool.value === 'docker') {
-      spinner.start(`Creating docker-compose ...\n`);
-      const dbType = await generateCompose(template, destDir);
-      spinner.succeed(`docker-compose.yml with ${dbType || 'no'} DB created!`);
-    }
+    // [2-3] 개발 도구 - Docker 선택 한 경우, docker-compose.yml 생성
+    if (tool.value === 'docker') await generateCompose(template, destDir);
+    
+    spinner.succeed(`${tool.name} setup done.`);
   }
 
   // [3] 템플릿 기본 패키지 설치
-  spinner.start(`Installing base dependencies with ${pkgManager}...\n`);
+  spinner.start(`Installing base dependencies with ${pkgManager}...`);
   await execa(pkgManager, ['install'], { cwd: destDir, stdio: 'inherit' });
-  spinner.succeed('Base dependencies installed!');
+  spinner.succeed('📦 Base dependencies installed!');
 
   // [4] git 첫 커밋 옵션
   await gitInitAndFirstCommit(destDir);

@@ -1,0 +1,29 @@
+# node_modules and build outputs
+node_modules/
+dist/
+build/
+coverage/
+.tmp/
+.temp/
+
+# 환경설정 및 로그
+.env
+.env.*
+*.log
+
+# TypeScript compiled output
+*.js
+*.d.ts
+*.map
+
+# OS, IDE/Editor 관련
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# 기타 무시할 파일/폴더
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
