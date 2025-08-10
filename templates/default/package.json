@@ -1,16 +1,13 @@
 {
-  "name": "typescript-express-starter",
-  "version": "0.0.0",
+  "name": "default-template",
+  "version": "1.0.0",
   "description": "",
   "author": "",
-  "license": "MIT",
+  "license": "ISC",
   "scripts": {
     "start": "cross-env NODE_ENV=production node dist/server.js",
     "dev": "cross-env NODE_ENV=development nodemon",
-    "build": "tsc && tsc-alias",
-    "test": "vitest run",
-    "test:e2e": "vitest run src/test/e2e",
-    "test:unit": "vitest run src/test/unit"
+    "build": "tsc && tsc-alias"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -43,23 +40,14 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^20.11.30",
-    "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "cross-env": "^7.0.3",
-    "eslint": "^9.30.1",
     "node-gyp": "^11.2.0",
     "nodemon": "^3.1.10",
-    "rimraf": "^6.0.1",
-    "supertest": "^7.1.3",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.5.3",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
-  },
-  "engines": {
-    "node": ">=18.17.0"
+    "typescript": "^5.5.3"
   }
 }
