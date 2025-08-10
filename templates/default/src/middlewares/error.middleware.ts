@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { HttpException } from '@exceptions/httpException';
 import { logger } from '@utils/logger';
 
-export const ErrorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
+export const ErrorMiddleware = (error: HttpException, req: Request, res: Response) => {
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';
   logger.error(`[${req.method}] ${req.originalUrl} | Status: ${status} | Message: ${message}`);

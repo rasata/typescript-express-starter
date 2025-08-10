@@ -110,20 +110,61 @@ async function copyDevtoolFiles(devtool, destDir) {
   }
 }
 
-// 패키지 설치 (최신버전)
+function isExplicitSpecifier(spec) {
+  return (
+    spec.startsWith('http://') ||
+    spec.startsWith('https://') ||
+    spec.startsWith('git+') ||
+    spec.startsWith('file:') ||
+    spec.startsWith('link:') ||
+    spec.startsWith('workspace:') ||
+    spec.startsWith('npm:')
+  );
+}
+
+// 'pkg' / '@scope/pkg' vs 'pkg@^1.2.3' / '@scope/pkg@1.2.3' 구분
+function splitNameAndVersion(spec) {
+  if (spec.startsWith('@')) {
+    const idx = spec.indexOf('@', 1); // 스코프 다음 '@'가 버전 구분자
+    if (idx === -1) return { name: spec, version: null };
+    return { name: spec.slice(0, idx), version: spec.slice(idx + 1) };
+  } else {
+    const idx = spec.indexOf('@');
+    if (idx === -1) return { name: spec, version: null };
+    return { name: spec.slice(0, idx), version: spec.slice(idx + 1) };
+  }
+}
+
+// 패키지 설치 (버전/범위 지정 시 그대로, 없으면 latest 조회해 고정)
 async function installPackages(pkgs, pkgManager, dev = true, destDir = process.cwd()) {
   if (!pkgs || pkgs.length === 0) return;
-  const pkgsWithLatest = [];
-  for (const pkg of pkgs) {
-    const version = await getLatestVersion(pkg);
-    pkgsWithLatest.push(version ? `${pkg}@${version}` : pkg);
+
+  const resolved = [];
+  for (const spec of pkgs) {
+    // URL/파일/워크스페이스/별칭은 그대로 통과
+    if (isExplicitSpecifier(spec)) {
+      resolved.push(spec);
+      continue;
+    }
+
+    const { name, version } = splitNameAndVersion(spec);
+    // 이미 버전/범위가 명시된 경우 그대로 사용 (예: ^9.33.0, ~10.1.8, 9.33.0)
+    if (version && version.length > 0) {
+      resolved.push(`${name}@${version}`);
+      continue;
+    }
+
+    // 버전 미지정 → npm view로 latest 조회 후 고정
+    const latest = await getLatestVersion(name);
+    resolved.push(latest ? `${name}@${latest}` : name);
   }
+
   const installCmd =
     pkgManager === 'npm'
-      ? ['install', dev ? '--save-dev' : '', ...pkgsWithLatest].filter(Boolean)
+      ? ['install', dev ? '--save-dev' : '', ...resolved].filter(Boolean)
       : pkgManager === 'yarn'
-        ? ['add', dev ? '--dev' : '', ...pkgsWithLatest].filter(Boolean)
-        : ['add', dev ? '-D' : '', ...pkgsWithLatest].filter(Boolean);
+        ? ['add', dev ? '--dev' : '', ...resolved].filter(Boolean)
+        : ['add', dev ? '-D' : '', ...resolved].filter(Boolean);
 
   await execa(pkgManager, installCmd, { cwd: destDir, stdio: 'inherit' });
 }

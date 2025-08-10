@@ -43,7 +43,7 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
 
     (req as RequestWithUser).user = findUser;
     next();
-  } catch (error) {
+  } catch {
     next(new HttpException(500, 'Authentication middleware error'));
   }
 };

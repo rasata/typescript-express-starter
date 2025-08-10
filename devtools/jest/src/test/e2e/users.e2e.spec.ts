@@ -14,13 +14,11 @@ describe('Users API', () => {
   });
 
   const user = { email: 'user1@example.com', password: 'password123' };
-  let userId: string;
 
   it('should create a new user', async () => {
     const res = await request(server).post(`${prefix}/users`).send(user);
     expect(res.statusCode).toBe(201);
     expect(res.body.data.email).toBe(user.email);
-    userId = res.body.data.id;
   });
 
   it('should retrieve all users', async () => {
