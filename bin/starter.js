@@ -9,16 +9,7 @@
  * Made with ❤️ by AGUMON 🦖
  *****************************************************************/
 
-import {
-  select,
-  text,
-  isCancel,
-  intro,
-  outro,
-  cancel,
-  note,
-  confirm,
-} from '@clack/prompts';
+import { select, text, isCancel, intro, outro, cancel, note, confirm } from '@clack/prompts';
 import chalk from 'chalk';
 import editJsonFile from 'edit-json-file';
 import { execa } from 'execa';
@@ -39,15 +30,32 @@ function checkNodeVersion(min = 16) {
   }
 }
 
-// 최신 CLI 버전 체크 
+// 최신 CLI 버전 체크 & 선택적 설치
 async function checkForUpdate(pkgName, localVersion) {
   try {
     const { stdout } = await execa('npm', ['view', pkgName, 'version']);
     const latest = stdout.trim();
     if (latest !== localVersion) {
-      console.log(chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})\n  $ npm i -g ${pkgName}`));
+      console.log(chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})`));
+      const shouldUpdate = await confirm({
+        message: `Do you want to update ${pkgName} to version ${latest}?`,
+        initial: true,
+      });
+      if (shouldUpdate) {
+        console.log(chalk.gray(`  Updating to latest version...`));
+        try {
+          await execa('npm', ['install', '-g', `${pkgName}@${latest}`], { stdio: 'inherit' });
+          console.log(chalk.green(`  ✓ Updated ${pkgName} to ${latest}`));
+        } catch (err) {
+          printError(`Failed to update ${pkgName}`, err.message);
+        }
+      } else {
+        console.log(chalk.gray('Skipped updating.'));
+      }
     }
-  } catch { }
+  } catch (err) {
+    printError('Failed to check latest version', err.message);
+  }
 }
 
 // 패키지매니저 글로벌 설치여부
@@ -256,9 +264,7 @@ async function main() {
   }
 
   // [1-1] Testing 도구를 선택한 경우에만 /src/test 예제 복사
-  const testDevtool = devtoolValues
-    .map(val => DEVTOOLS_VALUES.find(d => d.value === val))
-    .find(tool => tool && tool.category === 'Testing');
+  const testDevtool = devtoolValues.map(val => DEVTOOLS_VALUES.find(d => d.value === val)).find(tool => tool && tool.category === 'Testing');
 
   if (testDevtool) {
     const devtoolTestDir = path.join(DEVTOOLS, testDevtool.value, 'src', 'test');
@@ -286,7 +292,7 @@ async function main() {
 
     // [2-3] 개발 도구 - Docker 선택 한 경우, docker-compose.yml 생성
     if (tool.value === 'docker') await generateCompose(template, destDir);
-    
+
     spinner.succeed(`${tool.name} setup done.`);
   }
 
