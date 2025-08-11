@@ -1,7 +1,7 @@
 import { hash, compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { injectable, inject } from 'tsyringe';
-import { SECRET_KEY } from '@config/env';
+import { NODE_ENV, SECRET_KEY } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   private createCookie(tokenData: TokenData): string {
-    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn}; Path=/; SameSite=Lax;${process.env.NODE_ENV === 'production' ? ' Secure;' : ''}`;
+    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn}; Path=/; SameSite=Lax;${NODE_ENV === 'production' ? ' Secure;' : ''}`;
   }
 
   public async signup(userData: User): Promise<User> {

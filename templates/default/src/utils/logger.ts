@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import pino from 'pino';
-import { LOG_DIR } from '@config/env';
+import { LOG_DIR, LOG_LEVEL, NODE_ENV } from '@config/env';
 
 const logDir: string = join(__dirname, LOG_DIR || '/logs');
 if (!existsSync(logDir)) {
@@ -13,8 +13,8 @@ const debugLogPath = join(logDir, 'debug.log');
 const errorLogPath = join(logDir, 'error.log');
 
 // 로그 레벨 및 환경 설정
-const isProd = process.env.NODE_ENV === 'production';
-const logLevel = process.env.LOG_LEVEL || 'info';
+const isProd = NODE_ENV === 'production';
+const logLevel = LOG_LEVEL || 'info';
 
 // Pino 인스턴스
 export const logger = pino(

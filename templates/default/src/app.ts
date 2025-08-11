@@ -8,7 +8,10 @@ import hpp from 'hpp';
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS } from '@config/env';
+import {
+  NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS,
+  CORS_ORIGIN_LIST, API_SERVER_URL,
+} from '@config/env';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
@@ -66,7 +69,9 @@ class App {
     this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
 
     // CORS 화이트리스트를 환경변수에서 관리
-    const allowedOrigins = process.env.CORS_ORIGINS?.split(',').map(origin => origin.trim()) || ['http://localhost:3000'];
+    const allowedOrigins = CORS_ORIGIN_LIST.length > 0
+      ? CORS_ORIGIN_LIST
+      : ['http://localhost:3000'];
 
     this.app.use(
       cors({
@@ -87,13 +92,13 @@ class App {
         contentSecurityPolicy:
           this.env === 'production'
             ? {
-                directives: {
-                  defaultSrc: ["'self'"],
-                  scriptSrc: ["'self'", "'unsafe-inline'"],
-                  objectSrc: ["'none'"],
-                  upgradeInsecureRequests: [],
-                },
-              }
+              directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                objectSrc: ["'none'"],
+                upgradeInsecureRequests: [],
+              },
+            }
             : false, // 개발 환경에서는 CSP 비활성화 (hot reload 등 편의)
         referrerPolicy: { policy: 'no-referrer' },
       }),
@@ -121,7 +126,7 @@ class App {
         },
         servers: [
           {
-            url: process.env.API_SERVER_URL || `http://localhost:${this.port}${apiPrefix}`,
+            url: API_SERVER_URL || `http://localhost:${this.port}${apiPrefix}`,
             description: this.env === 'production' ? 'Production server' : 'Local server',
           },
         ],

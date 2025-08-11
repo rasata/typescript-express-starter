@@ -1,13 +1,10 @@
 import 'reflect-metadata';
+import '@config/env';
 import { container } from 'tsyringe';
 import App from '@/app';
-import { validateEnv } from '@config/validateEnv';
 import { UsersRepository } from '@repositories/users.repository';
 import { AuthRoute } from '@routes/auth.route';
 import { UsersRoute } from '@routes/users.route';
-
-// 환경변수 유효성 검증
-validateEnv();
 
 // DI 등록
 container.registerInstance(UsersRepository, new UsersRepository());
@@ -19,11 +16,10 @@ const routes = [container.resolve(UsersRoute), container.resolve(AuthRoute)];
 const appInstance = new App(routes);
 
 // listen()이 서버 객체(http.Server)를 반환하도록 app.ts를 살짝 수정
-const server = appInstance.listen();
+const server = appInstance.listen(); // PORT를 쓰려면 이렇게 전달도 가능
 
 // Graceful Shutdown: 운영환경에서 필수!
 if (server && typeof server.close === 'function') {
-  // SIGINT: Ctrl+C, SIGTERM: Docker/k8s kill 등
   ['SIGINT', 'SIGTERM'].forEach(signal => {
     process.on(signal, () => {
       console.log(`Received ${signal}, closing server...`);
@@ -36,5 +32,4 @@ if (server && typeof server.close === 'function') {
   });
 }
 
-// 테스트 코드 등에서 서버 객체 활용하고 싶으면
 export default server;

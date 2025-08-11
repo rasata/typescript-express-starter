@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { NODE_ENV } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { logger } from '@utils/logger';
 
@@ -12,7 +13,7 @@ export const ErrorMiddleware = (error: HttpException, req: Request, res: Respons
     error: {
       code: status,
       message,
-      ...(process.env.NODE_ENV === 'development' && error.stack ? { stack: error.stack } : {}),
+      ...(NODE_ENV === 'development' && error.stack ? { stack: error.stack } : {}),
       ...(typeof error.data === 'object' && error.data !== null ? { data: error.data } : {}),
     },
   });
