@@ -54,7 +54,6 @@
 
 ---
 
-
 ## 📝 Introduction
 
 **TypeScript Express Starter** provides a robust starting point for building secure, scalable, and maintainable RESTful APIs.  
@@ -67,6 +66,26 @@ It blends the flexibility and simplicity of Express with TypeScript’s type saf
 
 - Instantly ready for both prototyping and production
 
+## 💎 Features
+
+- ⚡ **TypeScript + Express** — Modern JS with full type safety
+
+- 📜 **API Docs** — Swagger/OpenAPI ready out-of-the-box
+
+- 🛡 **Security** — Helmet, CORS, HPP, rate limiting
+
+- 🧩 **Validation** — Zod schema-based runtime validation
+
+- 🔗 **Dependency Injection** — Lightweight DI with tsyringe
+
+- 🗄 **Database Integrations** — Sequelize, Prisma, Mongoose, TypeORM, Knex, Drizzle, etc.
+
+- 🛠 **Developer Tools** — ESLint, Prettier, Jest, Docker, PM2, NGINX, Makefile
+
+- 🧱 **Modular Architecture** — Easily extendable and maintainable
+
+- 🚀 **Production Ready** — Docker, PM2, NGINX support
+
 ## ⚡️ Quick Start
 
 ```bash
@@ -74,7 +93,7 @@ It blends the flexibility and simplicity of Express with TypeScript’s type saf
 npm install -g typescript-express-starter
 
 # Scaffold a new project
-npx typescript-express-starter my-app
+typescript-express-starter
 cd my-app
 
 # Run in development mode
@@ -86,30 +105,54 @@ npm run dev
 
 ### Example
 
-## 🔥 Core Features
-- Express + TypeScript: Full type safety and modern JavaScript support
+## 📂 Project Structure
 
-- Modern Logging: Fast, structured logging with Pino
+```bash
+src/
+ ├── config/           # Configuration files, environment settings
+ ├── controllers/      # Request handling & response logic
+ ├── dtos/             # Data Transfer Objects for request/response
+ ├── exceptions/       # Custom exception classes
+ ├── interfaces/       # TypeScript interfaces and type definitions
+ ├── middlewares/      # Middlewares (logging, auth, error handling, etc.)
+ ├── repositories/     # Database access logic
+ ├── routes/           # API route definitions
+ ├── services/         # Business logic
+ ├── utils/            # Utility/helper functions
+ ├── app.ts            # Express app initialization
+ └── server.ts         # Server entry point
 
-- Validation: Schema-based runtime validation with Zod
+.env                   # Default environment variables
+.env.development.local # Development-specific variables
+.env.production.local  # Production-specific variables
+.env.test.local        # Test-specific variables
+nodemon.json           # Nodemon variables
+swagger.yaml           # Swagger API documentation
+tsconfig.jsnon         # TypeScript variables
+```
 
-- Dependency Injection: Lightweight and flexible with tsyringe
+## 🛠 Devtools Types
 
-- Security: Helmet, CORS, HPP, rate limiting included by default
+| Category                    | Tools / Configs             | Description                                  |
+| --------------------------- | --------------------------- | -------------------------------------------- |
+| **Code Formatter / Linter** | `biome`, `prettier, eslint` | Code formatting & linting rules              |
+| **Build / Bundler**         | `swc`, `tsup`               | Build & bundling configuration               |
+| **Testing**                 | `jest`, `vitest`            | Unit & integration testing frameworks        |
+| **Process Manager**         | `pm2`                       | Manage and monitor Node.js processes         |
+| **CI/CD**                   | `github`                    | GitHub Actions workflow settings             |
+| **Git Hooks**               | `husky`                     | Pre-commit / pre-push hooks for lint/test    |
+| **Containerization**        | `docker`                    | Docker & docker-compose setup for deployment |
 
-- API Docs: Swagger/OpenAPI out of the box
-
-- Developer Tools: ESLint, Prettier, Jest, Docker, PM2, NGINX, Makefile
-
-- Modular: Easy to customize and extend
+> This categorization helps developers quickly understand what each tool is used for without checking every folder.
 
 ## 🧩 Template Choices
+
 Choose your preferred stack during setup!
 Support for major databases and patterns via CLI:
 
 | Template      | Stack / Integration            |
 | ------------- | ------------------------------ |
-| Default       | Express + TypeScript (vanilla) |
+| Default       | Express + TypeScript           |
 | Sequelize     | Sequelize ORM                  |
 | Mongoose      | MongoDB ODM (Mongoose)         |
 | TypeORM       | TypeORM                        |
@@ -121,40 +164,36 @@ Support for major databases and patterns via CLI:
 | Node Postgres | PostgreSQL driver (pg)         |
 | Drizzle       | Drizzle                        |
 
-More templates are regularly added and updated.
+> More templates are regularly added and updated.
 
-## 🛠 Developer Tooling & Ecosystem
+## 🤔 Positioning: When to Use Each
 
-- Logging: Pino, Pino-pretty
+| Criteria         | TypeScript Express Starter                          | NestJS                                     |
+| ---------------- | --------------------------------------------------- | ------------------------------------------ |
+| Learning Curve   | ✅ Low — easy for anyone familiar with Express       | Higher — requires OOP/DI/Decorators        |
+| Flexibility      | ✅ Maximum — customize any part of the stack         | Convention-based, opinionated structure    |
+| Modularity       | Middleware & modular pattern                        | 🌟 Strong built-in module system           |
+| Type Safety      | Full TypeScript support                             | Full TypeScript support                    |
+| Testing          | ✅ Supports Jest & Vitest — flexible choice          | Built-in Jest E2E setup                    |
+| Scale            | ✅ Fast prototyping → mid-size apps                  | 🌟 Large-scale enterprise apps             |
+| DI Framework     | Lightweight tsyringe — minimal overhead             | 🌟 Full-featured DI container              |
+| Best Fit         | ✅ Microservices, quick MVPs, developer agility      | 🌟 Complex, enterprise-grade applications  |
 
-- Validation: Zod
 
-- Dependency Injection: tsyringe
+## 📑 Recommended Commit Message
 
-- API Documentation: Swagger (swagger-jsdoc, swagger-ui-express)
+| When            | Commit Message     |
+| --------------- | ------------------ |
+| Add Feature     | ✨ Add Feature      |
+| Fix Bug         | 🐞 Fix Bug         |
+| Refactor Code   | 🛠 Refactor Code   |
+| Install Package | 📦 Install Package |
+| Fix Readme      | 📚 Fix Readme      |
+| Update Version  | 🌼 Update Version  |
+| New Template    | 🎉 New Template    |
 
-- Code Quality: ESLint, Prettier, EditorConfig
-
-- Testing: Jest, Vitest
-
-- Build Tools: SWC, TSC, Nodemon, Makefile, Tsup
-
-- Production Ready: Docker, Docker Compose, PM2, NGINX
-
-- Environment Management: dotenv, envalid
-
-## 🤔 Comparison: NestJS Boilerplate
-
-| Criteria       | TypeScript Express Starter         | NestJS                        |
-| -------------- | ---------------------------------- | ----------------------------- |
-| Learning Curve | Low (familiar Express patterns)    | Higher (OOP/DI/Decorators)    |
-| Flexibility    | Maximum (customize anything)       | Convention-based, opinionated |
-| Modularity     | Module/middleware oriented         | Strong module system          |
-| Type Safety    | Full TS support                    | Full TS support               |
-| Testing        | Jest, Vitest supported             | Jest + E2E built-in           |
-| Scale          | Fast prototyping to mid-size apps  | Best for large-scale projects |
-| DI Framework   | tsyringe (lightweight)             | Built-in container            |
-| Real World Use | Great for microservices, rapid dev | Enterprise-grade applications |
+## 📄 License
+MIT(LICENSE) © AGUMON (ljlm0402)
 
 ## ⭐️ Stargazers
 
@@ -167,8 +206,3 @@ More templates are regularly added and updated.
 ## 🤝 Contributors
 
 [![Contributors repo roster for @ljlm0402/typescript-express-starter](https://contributors-img.web.app/image?repo=ljlm0402/typescript-express-starter)](https://github.com/ljlm0402/typescript-express-starter/graphs/contributors)
-
-
-## 📄 License
-MIT(LICENSE) © AGUMON (ljlm0402)
-
