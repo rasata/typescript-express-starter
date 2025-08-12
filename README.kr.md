@@ -1,6 +1,6 @@
 <h1 align="center">
 <br>
-  <img src="https://github.com/ljlm0402/typescript-express-starter/raw/images/logo.jpg" alt="프로젝트 로고" />
+  <img src="https://github.com/ljlm0402/typescript-express-starter/raw/images/newLogo.png" alt="프로젝트 로고" />
   <br>
     <br>
   TypeScript Express Starter
