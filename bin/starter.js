@@ -16,7 +16,7 @@ import { execa } from 'execa';
 import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-import { PACKAGE_MANAGER, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
+import { PACKAGE_MANAGER, TEMPLATES_VALUES, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
 import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
 
 // ========== [공통 함수들] ==========
@@ -241,9 +241,17 @@ async function main() {
   const templateDirs = (await fs.readdir(TEMPLATES)).filter(f => fs.statSync(path.join(TEMPLATES, f)).isDirectory());
   if (templateDirs.length === 0) return printError('No templates found!');
 
+  const options = TEMPLATES_VALUES
+    .filter(t => t.active && templateDirs.includes(t.value))
+    .map(t => ({
+      label: t.name, // UI에 표시될 이름
+      value: t.value, // 선택 값
+      hint: t.desc, // 오른쪽에 표시될 설명
+    }));
+
   const template = await select({
     message: 'Choose a template:',
-    options: templateDirs.map(t => ({ label: t, value: t })),
+    options: options,
     initialValue: 'default',
   });
   if (isCancel(template)) return cancel('❌ Aborted.');
