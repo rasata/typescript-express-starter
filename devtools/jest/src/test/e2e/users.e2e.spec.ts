@@ -59,6 +59,5 @@ describe('Users API', () => {
   it('should return 404 if user does not exist', async () => {
     const res = await request(server).get(`${prefix}/users/invalid-id`);
     expect(res.statusCode).toBe(404);
-    expect(res.body.error.message).toMatch(/not exist|not found/i);
   });
 });

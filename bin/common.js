@@ -185,13 +185,13 @@ export const DEVTOOLS_VALUES = [
     name: 'Jest',
     value: 'jest',
     category: 'Testing',
-    files: ['jest.config.js'],
+    files: ['jest.config.cjs', 'jest.config.ts'],
     pkgs: [],
     devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', '@types/jest@30.0.0', 'jest@30.0.5', 'ts-jest@29.4.1'],
     scripts: {
-      test: 'jest --forceExit --detectOpenHandles',
-      'test:e2e': 'jest --testPathPattern=e2e',
-      'test:unit': 'jest --testPathPattern=unit',
+      'test': 'jest --config jest.config.cjs --watch',
+      'test:e2e': 'jest --config jest.config.cjs --testPathPatterns=e2e --watch',
+      'test:unit': 'jest --config jest.config.cjs --testPathPatterns=unit --watch'
     },
     desc: 'Industry-standard test runner for Node.js',
   },
@@ -203,7 +203,7 @@ export const DEVTOOLS_VALUES = [
     pkgs: [],
     devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', 'vite-tsconfig-paths@5.1.4', 'vitest@3.2.4'],
     scripts: {
-      test: 'vitest run',
+      'test': 'vitest run',
       'test:e2e': 'vitest run src/test/e2e',
       'test:unit': 'vitest run src/test/unit',
     },
