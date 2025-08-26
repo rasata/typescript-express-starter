@@ -135,7 +135,7 @@ tsconfig.jsnon         # TypeScript variables
 
 | Category                    | Tools / Configs             | Description                                  |
 | --------------------------- | --------------------------- | -------------------------------------------- |
-| **Code Formatter / Linter** | `biome`, `prettier, eslint` | Code formatting & linting rules              |
+| **Code Formatter / Linter** | `biome`, `prettier`, `eslint` | Code formatting & linting rules              |
 | **Build / Bundler**         | `swc`, `tsup`               | Build & bundling configuration               |
 | **Testing**                 | `jest`, `vitest`            | Unit & integration testing frameworks        |
 | **Process Manager**         | `pm2`                       | Manage and monitor Node.js processes         |
