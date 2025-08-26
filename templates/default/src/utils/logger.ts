@@ -48,7 +48,7 @@ export const stream = {
 
 // 전역 에러 핸들링 (필요하면)
 process.on('uncaughtException', err => {
-  logger.error(`Uncaught Exception: ${err.message}`, { stack: err.stack });
+  logger.error(`Uncaught Exception: ${err.message}`);
   process.exit(1);
 });
 process.on('unhandledRejection', reason => {
