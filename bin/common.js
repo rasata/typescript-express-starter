@@ -16,7 +16,7 @@ export const TEMPLATES_VALUES = [
     tags: ['express', 'typescript', 'starter'],
     version: 'v1.0.0',
     maintainer: 'core',
-    lastUpdated: '2025-08-12',
+    lastUpdated: '2025-08-27',
   },
   {
     name: 'GraphQL',
