@@ -244,8 +244,8 @@ export const DEVTOOLS_VALUES = [
     value: 'pm2',
     category: 'Deployment',
     files: ['ecosystem.config.js'],
-    pkgs: [],
-    devPkgs: ['pm2'],
+    pkgs: ['pm2'],
+    devPkgs: [],
     scripts: {
       'deploy:prod': 'pm2 start ecosystem.config.js --only prod',
       'deploy:dev': 'pm2 start ecosystem.config.js --only dev',
