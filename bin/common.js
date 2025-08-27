@@ -203,9 +203,12 @@ export const DEVTOOLS_VALUES = [
     pkgs: [],
     devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', 'vite-tsconfig-paths@5.1.4', 'vitest@3.2.4'],
     scripts: {
-      'test': 'vitest run',
-      'test:e2e': 'vitest run src/test/e2e',
-      'test:unit': 'vitest run src/test/unit',
+      "test": "vitest",
+      "test:unit": "vitest src/test/unit",
+      "test:e2e": "vitest src/test/e2e",
+      "test:ci": "vitest run --coverage",
+      "test:ci:unit": "vitest run src/test/unit --coverage",
+      "test:ci:e2e": "vitest run src/test/e2e --coverage"
     },
     desc: 'Fast Vite-powered unit/e2e test framework',
   },
