@@ -1,59 +1,45 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { injectable, inject } from 'tsyringe';
 import { User } from '@interfaces/users.interface';
 import { UsersService } from '@services/users.service';
+import { asyncHandler } from '@utils/asyncHandler';
 
 @injectable()
 export class UsersController {
-  constructor(@inject(UsersService) private readonly userService: UsersService) {}
+  constructor(@inject(UsersService) private readonly userService: UsersService) { }
 
-  getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const users = await this.userService.getAllUsers();
-      res.json({ data: users, message: 'findAll' });
-    } catch (e) {
-      next(e);
-    }
-  };
+  getUsers = asyncHandler(async (req: Request, res: Response) => {
+    const users = await this.userService.getAllUsers();
 
-  getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId: string = req.params.id;
-      const user = await this.userService.getUserById(userId);
-      res.json({ data: user, message: 'findById' });
-    } catch (e) {
-      next(e);
-    }
-  };
+    res.json({ data: users, message: 'findAll' });
+  });
 
-  createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userData: User = req.body;
-      const user = await this.userService.createUser(userData);
-      res.status(201).json({ data: user, message: 'create' });
-    } catch (e) {
-      next(e);
-    }
-  };
+  getUserById = asyncHandler(async (req: Request, res: Response) => {
+    const userId: string = req.params.id;
+    const user = await this.userService.getUserById(userId);
 
-  updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId: string = req.params.id;
-      const userData: User = req.body;
-      const user = await this.userService.updateUser(userId, userData);
-      res.json({ data: user, message: 'update' });
-    } catch (e) {
-      next(e);
-    }
-  };
+    res.json({ data: user, message: 'findById' });
+  });
 
-  deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const userId: string = req.params.id;
-      await this.userService.deleteUser(userId);
-      res.status(204).json({ message: 'delete' });
-    } catch (e) {
-      next(e);
-    }
-  };
+  createUser = asyncHandler(async (req: Request, res: Response) => {
+    const userData: User = req.body;
+    const user = await this.userService.createUser(userData);
+
+    res.status(201).json({ data: user, message: 'create' });
+  });
+
+  updateUser = asyncHandler(async (req: Request, res: Response) => {
+    const userId: string = req.params.id;
+    const userData: User = req.body;
+    const user = await this.userService.updateUser(userId, userData);
+
+    res.json({ data: user, message: 'update' });
+  });
+
+  deleteUser = asyncHandler(async (req: Request, res: Response) => {
+    const userId: string = req.params.id;
+    await this.userService.deleteUser(userId);
+
+    res.status(204).json({ message: 'delete' });
+  });
 }
