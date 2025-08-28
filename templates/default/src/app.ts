@@ -54,17 +54,15 @@ class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(
-      rateLimit({
-        windowMs: 60 * 1000, // 1분
-        max: this.env === 'production' ? 100 : 0, // 개발환경에서는 제한 없음
-        message: { error: 'Too many requests, please try again later.' },
-        keyGenerator: req => req.ip || '', // 신뢰 프록시 하에서 실IP, undefined 방지
-        skip: req => this.env !== 'production' || req.ip === '127.0.0.1',
-        legacyHeaders: false,
-        standardHeaders: true,
-      }),
-    );
+    this.app.use(rateLimit({
+      windowMs: 60_000,
+      limit: this.env === 'production' ? 100 : 1000,
+      standardHeaders: true,
+      legacyHeaders: false,
+      skip: (req) =>
+        this.env !== 'production' ||
+        ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip ?? ''),
+    }));
 
     this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
 
