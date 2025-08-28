@@ -3,7 +3,8 @@ import { join } from 'path';
 import pino from 'pino';
 import { LOG_DIR, LOG_LEVEL, NODE_ENV } from '@config/env';
 
-const logDir: string = join(__dirname, LOG_DIR || '/logs');
+const logRoot = LOG_DIR || 'logs';
+const logDir = join(process.cwd(), logRoot);
 if (!existsSync(logDir)) {
   mkdirSync(logDir, { recursive: true });
 }
