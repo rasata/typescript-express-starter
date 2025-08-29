@@ -14,6 +14,7 @@ import {
 } from '@config/env';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
+import { NotFoundMiddleware } from '@middlewares/notFound.middleware';
 import { logger, stream } from '@utils/logger';
 
 class App {
@@ -146,6 +147,7 @@ class App {
   }
 
   private initializeErrorHandling() {
+    this.app.use(NotFoundMiddleware);
     this.app.use(ErrorMiddleware);
   }
 }
