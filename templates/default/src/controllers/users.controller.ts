@@ -6,7 +6,7 @@ import { asyncHandler } from '@utils/asyncHandler';
 
 @injectable()
 export class UsersController {
-  constructor(@inject(UsersService) private readonly userService: UsersService) { }
+  constructor(@inject(UsersService) private readonly userService: UsersService) {}
 
   getUsers = asyncHandler(async (req: Request, res: Response) => {
     const users = await this.userService.getAllUsers();

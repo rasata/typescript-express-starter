@@ -7,7 +7,7 @@ import { asyncHandler } from '@utils/asyncHandler';
 
 @injectable()
 export class AuthController {
-  constructor(@inject(AuthService) private readonly authService: AuthService) { }
+  constructor(@inject(AuthService) private readonly authService: AuthService) {}
 
   public signUp = asyncHandler(async (req: Request, res: Response) => {
     const userData: User = req.body;

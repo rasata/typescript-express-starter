@@ -241,13 +241,11 @@ async function main() {
   const templateDirs = (await fs.readdir(TEMPLATES)).filter(f => fs.statSync(path.join(TEMPLATES, f)).isDirectory());
   if (templateDirs.length === 0) return printError('No templates found!');
 
-  const options = TEMPLATES_VALUES
-    .filter(t => t.active && templateDirs.includes(t.value))
-    .map(t => ({
-      label: t.name, // UI에 표시될 이름
-      value: t.value, // 선택 값
-      hint: t.desc, // 오른쪽에 표시될 설명
-    }));
+  const options = TEMPLATES_VALUES.filter(t => t.active && templateDirs.includes(t.value)).map(t => ({
+    label: t.name, // UI에 표시될 이름
+    value: t.value, // 선택 값
+    hint: t.desc, // 오른쪽에 표시될 설명
+  }));
 
   const template = await select({
     message: 'Choose a template:',

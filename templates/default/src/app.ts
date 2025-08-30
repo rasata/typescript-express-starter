@@ -8,10 +8,7 @@ import hpp from 'hpp';
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import {
-  NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS,
-  CORS_ORIGIN_LIST, API_SERVER_URL,
-} from '@config/env';
+import { NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS, CORS_ORIGIN_LIST, API_SERVER_URL } from '@config/env';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { NotFoundMiddleware } from '@middlewares/notFound.middleware';
@@ -55,22 +52,20 @@ class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(rateLimit({
-      windowMs: 60_000,
-      limit: this.env === 'production' ? 100 : 1000,
-      standardHeaders: true,
-      legacyHeaders: false,
-      skip: (req) =>
-        this.env !== 'production' ||
-        ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip ?? ''),
-    }));
+    this.app.use(
+      rateLimit({
+        windowMs: 60_000,
+        limit: this.env === 'production' ? 100 : 1000,
+        standardHeaders: true,
+        legacyHeaders: false,
+        skip: req => this.env !== 'production' || ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip ?? ''),
+      }),
+    );
 
     this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
 
     // CORS 화이트리스트를 환경변수에서 관리
-    const allowedOrigins = CORS_ORIGIN_LIST.length > 0
-      ? CORS_ORIGIN_LIST
-      : ['http://localhost:3000'];
+    const allowedOrigins = CORS_ORIGIN_LIST.length > 0 ? CORS_ORIGIN_LIST : ['http://localhost:3000'];
 
     this.app.use(
       cors({
@@ -91,13 +86,13 @@ class App {
         contentSecurityPolicy:
           this.env === 'production'
             ? {
-              directives: {
-                defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
-                objectSrc: ["'none'"],
-                upgradeInsecureRequests: [],
-              },
-            }
+                directives: {
+                  defaultSrc: ["'self'"],
+                  scriptSrc: ["'self'", "'unsafe-inline'"],
+                  objectSrc: ["'none'"],
+                  upgradeInsecureRequests: [],
+                },
+              }
             : false, // 개발 환경에서는 CSP 비활성화 (hot reload 등 편의)
         referrerPolicy: { policy: 'no-referrer' },
       }),

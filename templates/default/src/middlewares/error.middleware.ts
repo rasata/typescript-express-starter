@@ -9,21 +9,29 @@ type ValidationIssue = { path: string; message: string };
 type HttpExceptionWithData = HttpException & { data?: unknown };
 type WithStack = { stack?: string };
 
-interface ErrorDetails { code: number; message: string; data?: unknown; stack?: string }
-interface ErrorResponseBody { success: false; error: ErrorDetails }
+interface ErrorDetails {
+  code: number;
+  message: string;
+  data?: unknown;
+  stack?: string;
+}
+interface ErrorResponseBody {
+  success: false;
+  error: ErrorDetails;
+}
 
 /** 타입가드들 */
 const isZodError = (e: unknown): e is ZodError => {
   return e instanceof ZodError;
-}
+};
 
 /** jsonwebtoken은 런타임에 따라 클래스 경계 이슈가 있을 수 있어 name 기반 가드 권장 */
 const isTokenExpiredError = (e: unknown): e is TokenExpiredError => {
   return e instanceof Error && (e as any).name === 'TokenExpiredError';
-}
+};
 const isJsonWebTokenError = (e: unknown): e is JsonWebTokenError => {
   return e instanceof Error && (e as any).name === 'JsonWebTokenError';
-}
+};
 
 const toHttpException = (err: unknown): HttpException => {
   if (err instanceof HttpException) return err;
@@ -41,7 +49,7 @@ const toHttpException = (err: unknown): HttpException => {
 
   const e = err as Error | undefined;
   return new HttpException(500, e?.message || 'Internal Server Error');
-}
+};
 
 const extractStack = (err: unknown): string | undefined => {
   if (err && typeof err === 'object' && 'stack' in err) {
@@ -49,7 +57,7 @@ const extractStack = (err: unknown): string | undefined => {
     return typeof s === 'string' ? s : undefined;
   }
   return undefined;
-}
+};
 
 export const ErrorMiddleware = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
   const httpErr = toHttpException(error);

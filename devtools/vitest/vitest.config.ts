@@ -10,7 +10,7 @@ export default defineConfig({
     include: ['src/test/**/*.{test,spec}.ts'], // src/test/e2e, src/test/unit에 최적화
     exclude: ['node_modules', 'dist', 'coverage', 'logs'],
     coverage: {
-      provider: 'v8',                 // v8 사용 시
+      provider: 'v8', // v8 사용 시
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: 'coverage',
       include: ['src/**/*.{ts,tsx}'],

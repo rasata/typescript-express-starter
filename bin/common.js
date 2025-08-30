@@ -3,8 +3,8 @@ import path from 'path';
 
 export const PACKAGE_MANAGER = [
   { label: 'npm', value: 'npm' },
-  { label: 'yarn', value: 'yarn' },
   { label: 'pnpm', value: 'pnpm' },
+  { label: 'yarn', value: 'yarn' },
 ];
 
 export const TEMPLATES_VALUES = [
@@ -189,9 +189,9 @@ export const DEVTOOLS_VALUES = [
     pkgs: [],
     devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', '@types/jest@30.0.0', 'jest@30.0.5', 'ts-jest@29.4.1'],
     scripts: {
-      'test': 'jest --config jest.config.cjs --watch',
+      test: 'jest --config jest.config.cjs --watch',
       'test:e2e': 'jest --config jest.config.cjs --testPathPatterns=e2e --watch',
-      'test:unit': 'jest --config jest.config.cjs --testPathPatterns=unit --watch'
+      'test:unit': 'jest --config jest.config.cjs --testPathPatterns=unit --watch',
     },
     desc: 'Industry-standard test runner for Node.js',
   },
@@ -203,12 +203,12 @@ export const DEVTOOLS_VALUES = [
     pkgs: [],
     devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', 'vite-tsconfig-paths@5.1.4', 'vitest@3.2.4'],
     scripts: {
-      "test": "vitest",
-      "test:unit": "vitest src/test/unit",
-      "test:e2e": "vitest src/test/e2e",
-      "test:ci": "vitest run --coverage",
-      "test:ci:unit": "vitest run src/test/unit --coverage",
-      "test:ci:e2e": "vitest run src/test/e2e --coverage"
+      test: 'vitest',
+      'test:unit': 'vitest src/test/unit',
+      'test:e2e': 'vitest src/test/e2e',
+      'test:ci': 'vitest run --coverage',
+      'test:ci:unit': 'vitest run src/test/unit --coverage',
+      'test:ci:e2e': 'vitest run src/test/e2e --coverage',
     },
     desc: 'Fast Vite-powered unit/e2e test framework',
   },
