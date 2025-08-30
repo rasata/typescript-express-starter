@@ -56,7 +56,7 @@
 
 ## 📝 Introduction
 
-**TypeScript Express Starter** provides a robust starting point for building secure, scalable, and maintainable RESTful APIs.  
+**TypeScript Express Starter** provides a robust starting point for building secure, scalable, and maintainable RESTful APIs.
 
 It blends the flexibility and simplicity of Express with TypeScript’s type safety, supporting rapid development without compromising code quality or maintainability.
 
@@ -99,6 +99,7 @@ cd my-app
 # Run in development mode
 npm run dev
 ```
+
 - Access the app: http://localhost:3000/
 
 - Auto-generated API docs: http://localhost:3000/api-docs
@@ -133,15 +134,15 @@ tsconfig.jsnon         # TypeScript variables
 
 ## 🛠 Devtools Types
 
-| Category                    | Tools / Configs             | Description                                  |
-| --------------------------- | --------------------------- | -------------------------------------------- |
+| Category                    | Tools / Configs               | Description                                  |
+| --------------------------- | ----------------------------- | -------------------------------------------- |
 | **Code Formatter / Linter** | `biome`, `prettier`, `eslint` | Code formatting & linting rules              |
-| **Build / Bundler**         | `swc`, `tsup`               | Build & bundling configuration               |
-| **Testing**                 | `jest`, `vitest`            | Unit & integration testing frameworks        |
-| **Process Manager**         | `pm2`                       | Manage and monitor Node.js processes         |
-| **CI/CD**                   | `github`                    | GitHub Actions workflow settings             |
-| **Git Hooks**               | `husky`                     | Pre-commit / pre-push hooks for lint/test    |
-| **Containerization**        | `docker`                    | Docker & docker-compose setup for deployment |
+| **Build / Bundler**         | `swc`, `tsup`                 | Build & bundling configuration               |
+| **Testing**                 | `jest`, `vitest`              | Unit & integration testing frameworks        |
+| **Process Manager**         | `pm2`                         | Manage and monitor Node.js processes         |
+| **CI/CD**                   | `github`                      | GitHub Actions workflow settings             |
+| **Git Hooks**               | `husky`                       | Pre-commit / pre-push hooks for lint/test    |
+| **Containerization**        | `docker`                      | Docker & docker-compose setup for deployment |
 
 > This categorization helps developers quickly understand what each tool is used for without checking every folder.
 
@@ -150,41 +151,40 @@ tsconfig.jsnon         # TypeScript variables
 Choose your preferred stack during setup!
 Support for major databases and patterns via CLI:
 
-| Template      | Stack / Integration            |
-| ------------- | ------------------------------ |
-| Default       | Express + TypeScript           |
-| Sequelize     | Sequelize ORM                  |
-| Mongoose      | MongoDB ODM (Mongoose)         |
-| TypeORM       | TypeORM                        |
-| Prisma        | Prisma ORM                     |
-| Knex          | SQL Query Builder              |
-| GraphQL       | GraphQL support                |
-| Typegoose     | TS-friendly Mongoose           |
-| Mikro ORM     | Data Mapper ORM (multi-DB)     |
-| Node Postgres | PostgreSQL driver (pg)         |
-| Drizzle       | Drizzle                        |
+| Template      | Stack / Integration        |
+| ------------- | -------------------------- |
+| Default       | Express + TypeScript       |
+| Sequelize     | Sequelize ORM              |
+| Mongoose      | MongoDB ODM (Mongoose)     |
+| TypeORM       | TypeORM                    |
+| Prisma        | Prisma ORM                 |
+| Knex          | SQL Query Builder          |
+| GraphQL       | GraphQL support            |
+| Typegoose     | TS-friendly Mongoose       |
+| Mikro ORM     | Data Mapper ORM (multi-DB) |
+| Node Postgres | PostgreSQL driver (pg)     |
+| Drizzle       | Drizzle                    |
 
 > More templates are regularly added and updated.
 
 ## 🤔 Positioning: When to Use Each
 
-| Criteria         | TypeScript Express Starter                          | NestJS                                     |
-| ---------------- | --------------------------------------------------- | ------------------------------------------ |
-| Learning Curve   | ✅ Low — easy for anyone familiar with Express       | Higher — requires OOP/DI/Decorators        |
-| Flexibility      | ✅ Maximum — customize any part of the stack         | Convention-based, opinionated structure    |
-| Modularity       | Middleware & modular pattern                        | 🌟 Strong built-in module system           |
-| Type Safety      | Full TypeScript support                             | Full TypeScript support                    |
-| Testing          | ✅ Supports Jest & Vitest — flexible choice          | Built-in Jest E2E setup                    |
-| Scale            | ✅ Fast prototyping → mid-size apps                  | 🌟 Large-scale enterprise apps             |
-| DI Framework     | Lightweight tsyringe — minimal overhead             | 🌟 Full-featured DI container              |
-| Best Fit         | ✅ Microservices, quick MVPs, developer agility      | 🌟 Complex, enterprise-grade applications  |
-
+| Criteria       | TypeScript Express Starter                      | NestJS                                    |
+| -------------- | ----------------------------------------------- | ----------------------------------------- |
+| Learning Curve | ✅ Low — easy for anyone familiar with Express  | Higher — requires OOP/DI/Decorators       |
+| Flexibility    | ✅ Maximum — customize any part of the stack    | Convention-based, opinionated structure   |
+| Modularity     | Middleware & modular pattern                    | 🌟 Strong built-in module system          |
+| Type Safety    | Full TypeScript support                         | Full TypeScript support                   |
+| Testing        | ✅ Supports Jest & Vitest — flexible choice     | Built-in Jest E2E setup                   |
+| Scale          | ✅ Fast prototyping → mid-size apps             | 🌟 Large-scale enterprise apps            |
+| DI Framework   | Lightweight tsyringe — minimal overhead         | 🌟 Full-featured DI container             |
+| Best Fit       | ✅ Microservices, quick MVPs, developer agility | 🌟 Complex, enterprise-grade applications |
 
 ## 📑 Recommended Commit Message
 
 | When            | Commit Message     |
 | --------------- | ------------------ |
-| Add Feature     | ✨ Add Feature      |
+| Add Feature     | ✨ Add Feature     |
 | Fix Bug         | 🐞 Fix Bug         |
 | Refactor Code   | 🛠 Refactor Code   |
 | Install Package | 📦 Install Package |
@@ -193,6 +193,7 @@ Support for major databases and patterns via CLI:
 | New Template    | 🎉 New Template    |
 
 ## 📄 License
+
 MIT(LICENSE) © AGUMON (ljlm0402)
 
 ## ⭐️ Stargazers
