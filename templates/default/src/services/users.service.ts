@@ -7,7 +7,7 @@ import type { IUsersRepository } from '@repositories/users.repository';
 
 @injectable()
 export class UsersService {
-  constructor(@inject(UsersRepository) private usersRepository: IUsersRepository) {}
+  constructor(@inject(UsersRepository) private usersRepository: IUsersRepository) { }
 
   async getAllUsers(): Promise<User[]> {
     return this.usersRepository.findAll();
@@ -33,10 +33,12 @@ export class UsersService {
     const exists = await this.usersRepository.findById(id);
     if (!exists) throw new HttpException(404, 'User not found');
 
-    const hashedPassword = await hash(update.password, 10);
-    const user = { ...update, password: hashedPassword };
 
-    const updated = await this.usersRepository.update(id, user);
+    if (typeof update.password === 'string' && update.password.length > 0) {
+      update = { ...update, password: await hash(update.password, 10) };
+    }
+
+    const updated = await this.usersRepository.update(id, update);
     if (!updated) throw new HttpException(404, 'User not found');
     return updated;
   }
