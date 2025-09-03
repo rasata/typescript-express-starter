@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { injectable, inject } from 'tsyringe';
 import { User } from '@interfaces/users.interface';
 import { UsersService } from '@services/users.service';
