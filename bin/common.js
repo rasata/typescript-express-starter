@@ -140,7 +140,7 @@ export const DEVTOOLS_VALUES = [
     name: 'ESLint & Prettier',
     value: 'eslint',
     category: 'Linter',
-    files: ['.prettierrc', 'eslint.config.js'],
+    files: ['.prettierrc', 'eslint.config.cjs'],
     pkgs: [],
     devPkgs: ['eslint@^9.33.0', 'eslint-config-prettier@^10.1.1', 'globals@^15.10.0', 'prettier@3.6.2', 'typescript-eslint@^8.39.0'],
     scripts: {

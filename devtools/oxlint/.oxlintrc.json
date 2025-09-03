@@ -1,7 +1,5 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-
-  // lint 대상에서 제외
   "ignorePatterns": [
     "node_modules/**",
     "dist/**",
@@ -14,43 +12,33 @@
     ".env.*",
     "!.eslintrc.js"
   ],
-
-  // 사용 환경
   "env": {
     "node": true,
     "es2022": true
   },
-
-  // 플러그인
-  // note: plugins를 지정하면 기본 플러그인 세트가 대체되므로 필요한 것들을 모두 명시
   "plugins": [
-    "typescript",   // TS 규칙
-    "unicorn",      // 일반 품질/스타일 향상
-    "oxc",          // oxc 고유 규칙
-    "import",       // import 순환/미해결 등
-    "node",         // Node 런타임 관련
-    "promise"       // Promise 사용 패턴
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "node",
+    "promise"
   ],
-
-  // 전체 카테고리 기본값(원하는 톤으로 조정)
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
-    "style": "warn"
+    "style": "off"
   },
-
-  // 글로벌 규칙(필요 시 확장)
   "rules": {
-    // 예시: 동등 비교는 느슨하게 경고
     "eqeqeq": "warn"
   },
-
-  // 파일별 오버라이드
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
       "rules": {
-        // ESLint 설정과 동일 의도: TS 편의 규칙 Off
         "typescript/no-explicit-any": "off",
         "typescript/explicit-module-boundary-types": "off",
         "typescript/ban-types": "off",
@@ -58,8 +46,9 @@
       }
     },
     {
-      // 테스트 파일에서 console 허용 같은 식으로 원하는 예외 추가 가능
-      "files": ["**/*.{spec,test}.ts"],
+      "files": [
+        "**/*.{spec,test}.ts"
+      ],
       "rules": {
         "no-console": "off"
       }

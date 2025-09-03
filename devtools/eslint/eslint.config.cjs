@@ -1,18 +1,16 @@
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
-import eslintConfigPrettier from 'eslint-config-prettier';
+const tseslint = require('typescript-eslint');
+const globals = require('globals');
+const eslintConfigPrettier = require('eslint-config-prettier');
 
-export default [
-  {
-    ignores: ['dist/', 'coverage/', 'logs/', 'node_modules/', '*.config.js', '*.config.ts', '.env', '.env.*', '!.eslintrc.js'],
-  },
+module.exports = [
+  { ignores: ['dist/', 'coverage/', 'logs/', 'node_modules/', '*.config.js', '*.config.ts', '.env', '.env.*', '!.eslintrc.js'] },
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   {
     files: ['**/*.ts'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'module',
+      sourceType: 'commonjs',
       globals: { ...globals.node, ...globals.es2022 },
     },
     rules: {
