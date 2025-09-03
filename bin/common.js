@@ -121,11 +121,11 @@ export const TEMPLATES_VALUES = [
 ];
 
 export const DEVTOOLS_VALUES = [
-  // == [Formatter] == //
+  // == [Linter] == //
   {
     name: 'Biome',
     value: 'biome',
-    category: 'Formatter',
+    category: 'Linter',
     files: ['.biome.json', '.biomeignore'],
     pkgs: [],
     devPkgs: ['@biomejs/biome@2.1.4'],
@@ -137,9 +137,9 @@ export const DEVTOOLS_VALUES = [
     desc: 'All-in-one formatter and linter',
   },
   {
-    name: 'Prettier & ESLint',
-    value: 'prettier',
-    category: 'Formatter',
+    name: 'ESLint & Prettier',
+    value: 'eslint',
+    category: 'Linter',
     files: ['.prettierrc', 'eslint.config.js'],
     pkgs: [],
     devPkgs: ['eslint@^9.33.0', 'eslint-config-prettier@^10.1.1', 'globals@^15.10.0', 'prettier@3.6.2', 'typescript-eslint@^8.39.0'],
@@ -150,6 +150,21 @@ export const DEVTOOLS_VALUES = [
       'format:fix': 'prettier --write .',
     },
     desc: 'Separate formatter and linter setup',
+  },
+  {
+    name: 'Oxlint',
+    value: 'oxlint',
+    category: 'Linter',
+    files: ['.oxlintrc.json', '.prettierrc'],
+    pkgs: [],
+    devPkgs: ['oxlint@^1.14.0', '@oxlint/migrate@^1.14.0', 'prettier@3.6.2'],
+    scripts: {
+      'lint': 'oxlint .',
+      'lint:fix': 'oxlint . --fix',
+      'format': 'prettier --check .',
+      'format:fix': 'prettier --write .',
+    },
+    desc: 'Ultra-fast Rust linter for JS/TS'
   },
 
   // == [Compiler] == //
