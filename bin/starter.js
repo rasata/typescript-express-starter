@@ -16,7 +16,7 @@ import { execa } from 'execa';
 import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-import { Project, QuoteKind, SyntaxKind, Writers } from 'ts-morph';
+import { Project, QuoteKind, SyntaxKind } from 'ts-morph';
 import { PACKAGE_MANAGER, TEMPLATES_VALUES, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
 import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
 
@@ -217,7 +217,7 @@ async function injectSwaggerIntoApp(destDir) {
   });
   const source = project.addSourceFileAtPath(appPath);
 
-  // ---------- 1) import 위치: morgan 바로 아래 ----------
+  // ---------- 1) swagger-jsdoc, swagger-ui-express 추가 ----------
   const importDecls = source.getImportDeclarations();
   const findImport = mod => importDecls.find(d => d.getModuleSpecifierValue() === mod);
   const morganImport = findImport('morgan');
@@ -243,7 +243,26 @@ async function injectSwaggerIntoApp(destDir) {
     moduleSpecifier: 'swagger-ui-express',
   });
 
-  // ---------- 2) App 클래스 / constructor 정리 ----------
+  // ---------- 2) API_SERVER_URL env 추가 ----------
+  const envImport = source
+    .getImportDeclarations()
+    .find(d => d.getModuleSpecifierValue() === '@config/env');
+
+  if (!envImport) return; // 템플릿과 다를 수 있으니 조용히 스킵
+
+  // namespace import이면 변경하지 않음 (예: import * as env from '@config/env')
+  if (envImport.getNamespaceImport()) return;
+
+  // 이미 named import로 존재?
+  const hasNamed = envImport
+    .getNamedImports()
+    .some(n => n.getName() === 'API_SERVER_URL');
+
+  if (!hasNamed) {
+    envImport.addNamedImport('API_SERVER_URL');
+  }
+
+  // ---------- 3) App 클래스 / constructor 정리 ----------
   let appClass = source.getClass('App') || source.getClasses()[0];
   if (!appClass) {
     console.log(chalk.yellow('[inject-swagger] skip: no class found in src/app.ts'));
@@ -258,8 +277,8 @@ async function injectSwaggerIntoApp(destDir) {
   // initializeErrorHandling 메서드 (위치 기준용)
   const errorMethod = appClass.getInstanceMethod('initializeErrorHandling');
 
-  // ---------- 3) initializeSwagger 메서드: errorHandling 바로 위에 삽입 ----------
-    if (!initMethod) {
+  // ---------- 4) initializeSwagger 메서드: errorHandling 바로 위에 삽입 ----------
+  if (!initMethod) {
     const insertIndex = errorMethod ? errorMethod.getChildIndex() : undefined;
 
     const methodStructure = {
@@ -306,7 +325,7 @@ async function injectSwaggerIntoApp(destDir) {
             });
             writer.writeLine('},');
           });
-           writer.writeLine('},');
+          writer.writeLine('},');
           writer.writeLine('apis: [\'swagger.yaml\', \'src/controllers/*.ts\'],');
         });
         writer.writeLine('};');
@@ -324,7 +343,7 @@ async function injectSwaggerIntoApp(destDir) {
     initMethod = appClass.getInstanceMethod('initializeSwagger');
   }
 
-  // ---------- 4) constructor에서 initializeErrorHandling 이전에 호출 ----------
+  // ---------- 5) constructor에서 initializeErrorHandling 이전에 호출 ----------
   let ctor = appClass.getConstructors()[0];
   if (!ctor) {
     appClass.addConstructor({

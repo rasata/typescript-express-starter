@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
-import { NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS, CORS_ORIGIN_LIST, API_SERVER_URL } from '@config/env';
+import { NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS, CORS_ORIGIN_LIST } from '@config/env';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { NotFoundMiddleware } from '@middlewares/notFound.middleware';
