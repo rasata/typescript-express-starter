@@ -228,6 +228,18 @@ export const DEVTOOLS_VALUES = [
     desc: 'Fast Vite-powered unit/e2e test framework',
   },
 
+  // == [API development] == //
+  {
+    name: 'Swagger',
+    value: 'swagger',
+    category: 'API development',
+    files: ['swagger.yaml'],
+    pkgs: ['swagger-jsdoc@^6.2.8', 'swagger-ui-express@^5.0.1'],
+    devPkgs: ['@types/swagger-jsdoc@^6.0.4', '@types/swagger-ui-express@^4.1.8'],
+    scripts: {},
+    desc: 'Simplify your API development with our open-source and professional tools',
+  },
+
   // == [Infrastructure] == //
   {
     name: 'Docker',

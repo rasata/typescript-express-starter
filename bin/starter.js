@@ -16,6 +16,7 @@ import { execa } from 'execa';
 import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
+import { Project, QuoteKind, SyntaxKind, Writers } from 'ts-morph';
 import { PACKAGE_MANAGER, TEMPLATES_VALUES, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
 import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
 
@@ -31,11 +32,16 @@ function checkNodeVersion(min = 16) {
 }
 
 // 최신 CLI 버전 체크 & 선택적 설치
-async function checkForUpdate(pkgName, localVersion) {
+async function checkForUpdate() {
   try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    const localPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const pkgName = localPkg.name || 'typescript-express-stater'
+    const localVersion = localPkg.version || '0.0.0';
+
     const { stdout } = await execa('npm', ['view', pkgName, 'version']);
     const latest = stdout.trim();
-    if (latest !== localVersion) {
+    if (latest > localVersion) {
       console.log(chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})`));
       const shouldUpdate = await confirm({
         message: `Do you want to update ${pkgName} to version ${latest}?`,
@@ -197,6 +203,164 @@ async function generateCompose(template, destDir) {
   return dbType;
 }
 
+// Swagger AST 주입
+async function injectSwaggerIntoApp(destDir) {
+  const appPath = path.join(destDir, 'src', 'app.ts');
+  if (!(await fs.pathExists(appPath))) {
+    console.log(chalk.yellow(`[inject-swagger] skip: ${appPath} not found`));
+    return;
+  }
+
+  const project = new Project({
+    manipulationSettings: { quoteKind: QuoteKind.Single },
+    skipAddingFilesFromTsConfig: true,
+  });
+  const source = project.addSourceFileAtPath(appPath);
+
+  // ---------- 1) import 위치: morgan 바로 아래 ----------
+  const importDecls = source.getImportDeclarations();
+  const findImport = mod => importDecls.find(d => d.getModuleSpecifierValue() === mod);
+  const morganImport = findImport('morgan');
+
+  // 기존 swagger imports가 있으면 제거(위치 재정렬용)
+  const swaggerJSDocImport = findImport('swagger-jsdoc');
+  const swaggerUiImport = findImport('swagger-ui-express');
+  if (swaggerJSDocImport) swaggerJSDocImport.remove();
+  if (swaggerUiImport) swaggerUiImport.remove();
+
+  // morgan 이후 인덱스 계산
+  const afterMorganIndex = morganImport
+    ? importDecls.indexOf(morganImport) + 1
+    : importDecls.length; // morgan이 없으면 맨 끝으로
+
+  // 다시 삽입(중복 방지)
+  source.insertImportDeclaration(afterMorganIndex, {
+    defaultImport: 'swaggerJSDoc',
+    moduleSpecifier: 'swagger-jsdoc',
+  });
+  source.insertImportDeclaration(afterMorganIndex + 1, {
+    defaultImport: 'swaggerUi',
+    moduleSpecifier: 'swagger-ui-express',
+  });
+
+  // ---------- 2) App 클래스 / constructor 정리 ----------
+  let appClass = source.getClass('App') || source.getClasses()[0];
+  if (!appClass) {
+    console.log(chalk.yellow('[inject-swagger] skip: no class found in src/app.ts'));
+    source.formatText({ indentSize: 2, convertTabsToSpaces: true });
+    await source.save();
+    return;
+  }
+
+  // initializeSwagger 메서드가 있는지 확인
+  let initMethod = appClass.getInstanceMethod('initializeSwagger');
+
+  // initializeErrorHandling 메서드 (위치 기준용)
+  const errorMethod = appClass.getInstanceMethod('initializeErrorHandling');
+
+  // ---------- 3) initializeSwagger 메서드: errorHandling 바로 위에 삽입 ----------
+    if (!initMethod) {
+    const insertIndex = errorMethod ? errorMethod.getChildIndex() : undefined;
+
+    const methodStructure = {
+      name: 'initializeSwagger',
+      scope: 'private',
+      parameters: [{ name: 'apiPrefix', type: 'string' }],
+      // Writers 사용: 들여쓰기 자동 정렬
+      statements: (writer) => {
+        writer.writeLine('const options = {');
+        writer.indent(() => {
+          writer.writeLine('swaggerDefinition: {');
+          writer.indent(() => {
+            writer.writeLine(`openapi: '3.0.0',`);
+            writer.writeLine('info: {');
+            writer.indent(() => {
+              writer.writeLine(`title: 'REST API',`);
+              writer.writeLine(`version: '1.0.0',`);
+              writer.writeLine(`description: 'Example API Documentation',`);
+            });
+            writer.writeLine('},');
+            writer.writeLine('servers: [');
+            writer.indent(() => {
+              writer.writeLine('{');
+              writer.indent(() => {
+                writer.writeLine(`url: API_SERVER_URL || \`http://localhost:\${this.port}\${apiPrefix}\`,`);
+                writer.writeLine(`description: this.env === 'production' ? 'Production server' : 'Local server',`);
+              });
+              writer.writeLine('},');
+            });
+            writer.writeLine('],');
+            writer.writeLine('components: {');
+            writer.indent(() => {
+              writer.writeLine('securitySchemes: {');
+              writer.indent(() => {
+                writer.writeLine('bearerAuth: {');
+                writer.indent(() => {
+                  writer.writeLine(`type: 'http',`);
+                  writer.writeLine(`scheme: 'bearer',`);
+                  writer.writeLine(`bearerFormat: 'JWT',`);
+                });
+                writer.writeLine('},');
+              });
+              writer.writeLine('},');
+            });
+            writer.writeLine('},');
+          });
+           writer.writeLine('},');
+          writer.writeLine('apis: [\'swagger.yaml\', \'src/controllers/*.ts\'],');
+        });
+        writer.writeLine('};');
+        writer.blankLine();
+        writer.writeLine('const specs = swaggerJSDoc(options);');
+        writer.writeLine(`this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));`);
+      },
+    };
+
+    if (insertIndex !== undefined) {
+      appClass.insertMethod(insertIndex, methodStructure);
+    } else {
+      appClass.addMethod(methodStructure);
+    }
+    initMethod = appClass.getInstanceMethod('initializeSwagger');
+  }
+
+  // ---------- 4) constructor에서 initializeErrorHandling 이전에 호출 ----------
+  let ctor = appClass.getConstructors()[0];
+  if (!ctor) {
+    appClass.addConstructor({
+      statements: (writer) => {
+        writer.writeLine(`this.initializeSwagger(apiPrefix);`);
+      },
+    });
+  } else {
+    const body = ctor.getBody();
+    if (body) {
+      const stmts = body.getStatements();
+      const hasCallAlready = body
+        .getDescendantsOfKind(SyntaxKind.CallExpression)
+        .some(call => call.getExpression().getText() === 'this.initializeSwagger');
+
+      if (!hasCallAlready) {
+        // initializeErrorHandling 위치 찾기
+        let insertAt = stmts.findIndex(s => s.getText().includes('this.initializeErrorHandling('));
+        if (insertAt === -1) {
+          // initializeRoutes 다음을 우선 시도
+          const routesIdx = stmts.findIndex(s => s.getText().includes('this.initializeRoutes('));
+          insertAt = routesIdx >= 0 ? routesIdx + 1 : stmts.length;
+        }
+        body.insertStatements(insertAt, `this.initializeSwagger(apiPrefix);`);
+      }
+    }
+  }
+
+  source.formatText({
+    indentSize: 2, // 또는 4
+    convertTabsToSpaces: true,
+  });
+  await source.save();
+  console.log(chalk.green('[inject-swagger] OK: src/app.ts updated with desired ordering.'));
+}
+
 // Git init & 첫 커밋
 async function gitInitAndFirstCommit(destDir) {
   const doGit = await confirm({ message: 'Initialize git and make first commit?', initial: true });
@@ -217,7 +381,7 @@ async function main() {
   checkNodeVersion(16);
 
   // 2. CLI 최신버전 안내
-  await checkForUpdate('typescript-express-starter', '10.2.2');
+  await checkForUpdate();
 
   const gradientBanner =
     '\x1B[38;2;91;192;222m📘\x1B[39m\x1B[38;2;91;192;222m \x1B[39m\x1B[38;2;91;192;222mT\x1B[39m\x1B[38;2;82;175;222my\x1B[39m\x1B[38;2;74;159;222mp\x1B[39m\x1B[38;2;66;143;210me\x1B[39m\x1B[38;2;58;128;198mS\x1B[39m\x1B[38;2;54;124;190mc\x1B[39m\x1B[38;2;52;118;180mr\x1B[39m\x1B[38;2;50;115;172mi\x1B[39m\x1B[38;2;49;120;198mp\x1B[39m\x1B[38;2;47;110;168mt\x1B[39m\x1B[38;2;45;105;160m \x1B[39m\x1B[38;2;43;100;152mE\x1B[39m\x1B[38;2;41;95;144mx\x1B[39m\x1B[38;2;39;90;136mp\x1B[39m\x1B[38;2;37;85;128mr\x1B[39m\x1B[38;2;35;80;120me\x1B[39m\x1B[38;2;33;75;112ms\x1B[39m\x1B[38;2;30;72;106ms\x1B[39m\x1B[38;2;28;70;100m \x1B[39m\x1B[38;2;26;68;96mS\x1B[39m\x1B[38;2;25;68;94mt\x1B[39m\x1B[38;2;25;69;92ma\x1B[39m\x1B[38;2;25;70;91mr\x1B[39m\x1B[38;2;25;70;150mt\x1B[39m\x1B[38;2;25;70;150me\x1B[39m\x1B[38;2;25;70;150mr\x1B[39m';
@@ -339,6 +503,11 @@ async function main() {
 
     // [2-3] 개발 도구 - Docker 선택 한 경우, docker-compose.yml 생성
     if (tool.value === 'docker') await generateCompose(template, destDir);
+
+    // [2-4] 개발 도구 - Swagger 선택 시에만 app.ts AST 패치
+    if (tool.value === 'swagger') {
+      await injectSwaggerIntoApp(destDir);
+    }
 
     spinner.succeed(`${tool.name} setup done.`);
   }

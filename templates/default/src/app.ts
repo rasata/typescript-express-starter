@@ -6,8 +6,6 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
 import { NODE_ENV, PORT, LOG_FORMAT, CREDENTIALS, CORS_ORIGIN_LIST, API_SERVER_URL } from '@config/env';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
@@ -27,7 +25,6 @@ class App {
     this.initializeTrustProxy();
     this.initializeMiddlewares();
     this.initializeRoutes(routes, apiPrefix);
-    this.initializeSwagger(apiPrefix);
     this.initializeErrorHandling();
   }
 
@@ -107,38 +104,6 @@ class App {
     routes.forEach(route => {
       this.app.use(apiPrefix, route.router);
     });
-  }
-
-  private initializeSwagger(apiPrefix: string) {
-    const options = {
-      swaggerDefinition: {
-        openapi: '3.0.0',
-        info: {
-          title: 'REST API',
-          version: '1.0.0',
-          description: 'Example API Documentation',
-        },
-        servers: [
-          {
-            url: API_SERVER_URL || `http://localhost:${this.port}${apiPrefix}`,
-            description: this.env === 'production' ? 'Production server' : 'Local server',
-          },
-        ],
-        components: {
-          securitySchemes: {
-            bearerAuth: {
-              type: 'http',
-              scheme: 'bearer',
-              bearerFormat: 'JWT',
-            },
-          },
-        },
-      },
-      apis: ['swagger.yaml', 'src/controllers/*.ts'],
-    };
-
-    const specs = swaggerJSDoc(options);
-    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
   }
 
   private initializeErrorHandling() {
