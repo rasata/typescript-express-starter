@@ -2,6 +2,6 @@
   "watch": ["src", ".env"],
   "ext": "js,ts,json",
   "ignore": ["logs/*", "**/*.spec.ts", "**/*.test.ts"],
-  "exec": "ts-node -r tsconfig-paths/register --transpile-only src/server.ts",
+  "exec": "tsx src/server.ts",
   "delay": "500"
 }

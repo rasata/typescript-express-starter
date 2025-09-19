@@ -121,11 +121,11 @@ export const TEMPLATES_VALUES = [
 ];
 
 export const DEVTOOLS_VALUES = [
-  // == [Formatter] == //
+  // == [Linter] == //
   {
     name: 'Biome',
     value: 'biome',
-    category: 'Formatter',
+    category: 'Linter',
     files: ['.biome.json', '.biomeignore'],
     pkgs: [],
     devPkgs: ['@biomejs/biome@2.1.4'],
@@ -137,10 +137,10 @@ export const DEVTOOLS_VALUES = [
     desc: 'All-in-one formatter and linter',
   },
   {
-    name: 'Prettier & ESLint',
-    value: 'prettier',
-    category: 'Formatter',
-    files: ['.prettierrc', 'eslint.config.js'],
+    name: 'ESLint & Prettier',
+    value: 'eslint',
+    category: 'Linter',
+    files: ['.prettierrc', 'eslint.config.cjs'],
     pkgs: [],
     devPkgs: ['eslint@^9.33.0', 'eslint-config-prettier@^10.1.1', 'globals@^15.10.0', 'prettier@3.6.2', 'typescript-eslint@^8.39.0'],
     scripts: {
@@ -150,6 +150,21 @@ export const DEVTOOLS_VALUES = [
       'format:fix': 'prettier --write .',
     },
     desc: 'Separate formatter and linter setup',
+  },
+  {
+    name: 'Oxlint',
+    value: 'oxlint',
+    category: 'Linter',
+    files: ['.oxlintrc.json', '.prettierrc'],
+    pkgs: [],
+    devPkgs: ['oxlint@^1.14.0', '@oxlint/migrate@^1.14.0', 'prettier@3.6.2'],
+    scripts: {
+      'lint': 'oxlint .',
+      'lint:fix': 'oxlint . --fix',
+      'format': 'prettier --check .',
+      'format:fix': 'prettier --write .',
+    },
+    desc: 'Ultra-fast Rust linter for JS/TS'
   },
 
   // == [Compiler] == //
@@ -211,6 +226,18 @@ export const DEVTOOLS_VALUES = [
       'test:ci:e2e': 'vitest run src/test/e2e --coverage',
     },
     desc: 'Fast Vite-powered unit/e2e test framework',
+  },
+
+  // == [API development] == //
+  {
+    name: 'Swagger',
+    value: 'swagger',
+    category: 'API development',
+    files: ['swagger.yaml'],
+    pkgs: ['swagger-jsdoc@^6.2.8', 'swagger-ui-express@^5.0.1'],
+    devPkgs: ['@types/swagger-jsdoc@^6.0.4', '@types/swagger-ui-express@^4.1.8'],
+    scripts: {},
+    desc: 'Simplify your API development with our open-source and professional tools',
   },
 
   // == [Infrastructure] == //

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { verify, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 import { container } from 'tsyringe';
 import { SECRET_KEY } from '@config/env';

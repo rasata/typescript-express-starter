@@ -1,8 +1,42 @@
-.vscode/
+# Environment / OS
+.DS_Store
+Thumbs.db
+
+# Git / CI
+.git
+.gitignore
 .github/
+
+# Lint / Format
 .eslintrc
-eslint.config.js
+.eslintrc.js
+.eslintrc.json
+.eslintignore
 .prettierrc
+.prettierrc.js
+.prettierrc.json
 .prettierignore
-pnpm-lock.yaml
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Build outputs
+dist/
+build/
+coverage/
 *.log
+*.tgz
+
+# Environment variables
+.env
+.env.*.local
+
+# Document
+examples/
+docs/
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
