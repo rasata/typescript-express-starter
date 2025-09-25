@@ -16,33 +16,46 @@ import { execa } from 'execa';
 import fs from 'fs-extra';
 import ora from 'ora';
 import path from 'path';
-import { Project, QuoteKind, SyntaxKind } from 'ts-morph';
-import { PACKAGE_MANAGER, TEMPLATES_VALUES, DEVTOOLS_VALUES, TEMPLATES, DEVTOOLS } from './common.js';
-import { TEMPLATE_DB, DB_SERVICES, BASE_COMPOSE } from './db-map.js';
+
+// Config and constants
+import { CONFIG, getEnvironmentConfig } from './config.js';
+import { PACKAGE_MANAGER, TEMPLATES_VALUES, DEVTOOLS_VALUES } from './common.js';
+
+// Database configuration
+import { TEMPLATE_DB, generateDockerCompose } from './db-map.js';
+
+// Error handling
+import { CLIError, NetworkError, FileSystemError, printError } from './errors.js';
+
+// Validation utilities
+import {
+  validateProjectName,
+  validateProjectPath,
+  sanitizeInput,
+  validateNodeVersion,
+} from './validators.js';
+
+// Performance optimizations
+import { versionCache, PackageBatch } from './performance.js';
+
+// AST utilities
+import { injectSwaggerIntoApp } from './ast-utils.js';
 
 // ========== [공통 함수들] ==========
-
-// Node 버전 체크 (16+)
-function checkNodeVersion(min = 16) {
-  const major = parseInt(process.versions.node.split('.')[0], 10);
-  if (major < min) {
-    console.error(chalk.red(`Node.js ${min}+ required. You have ${process.versions.node}.`));
-    process.exit(1);
-  }
-}
 
 // 최신 CLI 버전 체크 & 선택적 설치
 async function checkForUpdate() {
   try {
     const pkgPath = path.resolve(process.cwd(), 'package.json');
     const localPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-    const pkgName = localPkg.name || 'typescript-express-stater'
+    const pkgName = localPkg.name || 'typescript-express-stater';
     const localVersion = localPkg.version || '0.0.0';
 
-    const { stdout } = await execa('npm', ['view', pkgName, 'version']);
-    const latest = stdout.trim();
+    const latest = await versionCache.getLatestVersion(pkgName);
     if (latest > localVersion) {
-      console.log(chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})`));
+      console.log(
+        chalk.yellow(`🔔  New version available: ${latest} (You are on ${localVersion})`),
+      );
       const shouldUpdate = await confirm({
         message: `Do you want to update ${pkgName} to version ${latest}?`,
         initial: true,
@@ -53,14 +66,14 @@ async function checkForUpdate() {
           await execa('npm', ['install', '-g', `${pkgName}@${latest}`], { stdio: 'inherit' });
           console.log(chalk.green(`  ✓ Updated ${pkgName} to ${latest}`));
         } catch (err) {
-          printError(`Failed to update ${pkgName}`, err.message);
+          printError(new NetworkError(`Failed to update ${pkgName}`, 'update', err.message));
         }
       } else {
         console.log(chalk.gray('Skipped updating.'));
       }
     }
   } catch (err) {
-    printError('Failed to check latest version', err.message);
+    printError(new NetworkError('Failed to check latest version', 'version-check', err.message));
   }
 }
 
@@ -71,16 +84,6 @@ async function checkPkgManagerInstalled(pm) {
     return true;
   } catch {
     return false;
-  }
-}
-
-// 최신 버전 조회
-async function getLatestVersion(pkg) {
-  try {
-    const { stdout } = await execa('npm', ['view', pkg, 'version']);
-    return stdout.trim();
-  } catch {
-    return null;
   }
 }
 
@@ -107,7 +110,7 @@ function resolveDependencies(selected) {
 // 파일 복사
 async function copyDevtoolFiles(devtool, destDir) {
   for (const file of devtool.files) {
-    const src = path.join(DEVTOOLS, devtool.value, file);
+    const src = path.join(CONFIG.paths.devtools, devtool.value, file);
     const dst = path.join(destDir, file);
     if (await fs.pathExists(src)) {
       await fs.copy(src, dst, { overwrite: true });
@@ -116,54 +119,13 @@ async function copyDevtoolFiles(devtool, destDir) {
   }
 }
 
-function isExplicitSpecifier(spec) {
-  return (
-    spec.startsWith('http://') ||
-    spec.startsWith('https://') ||
-    spec.startsWith('git+') ||
-    spec.startsWith('file:') ||
-    spec.startsWith('link:') ||
-    spec.startsWith('workspace:') ||
-    spec.startsWith('npm:')
-  );
-}
-
-// 'pkg' / '@scope/pkg' vs 'pkg@^1.2.3' / '@scope/pkg@1.2.3' 구분
-function splitNameAndVersion(spec) {
-  if (spec.startsWith('@')) {
-    const idx = spec.indexOf('@', 1); // 스코프 다음 '@'가 버전 구분자
-    if (idx === -1) return { name: spec, version: null };
-    return { name: spec.slice(0, idx), version: spec.slice(idx + 1) };
-  } else {
-    const idx = spec.indexOf('@');
-    if (idx === -1) return { name: spec, version: null };
-    return { name: spec.slice(0, idx), version: spec.slice(idx + 1) };
-  }
-}
-
-// 패키지 설치 (버전/범위 지정 시 그대로, 없으면 latest 조회해 고정)
+// 패키지 설치 (성능 최적화된 배치 처리 사용)
 async function installPackages(pkgs, pkgManager, dev = true, destDir = process.cwd()) {
   if (!pkgs || pkgs.length === 0) return;
 
-  const resolved = [];
-  for (const spec of pkgs) {
-    // URL/파일/워크스페이스/별칭은 그대로 통과
-    if (isExplicitSpecifier(spec)) {
-      resolved.push(spec);
-      continue;
-    }
-
-    const { name, version } = splitNameAndVersion(spec);
-    // 이미 버전/범위가 명시된 경우 그대로 사용 (예: ^9.33.0, ~10.1.8, 9.33.0)
-    if (version && version.length > 0) {
-      resolved.push(`${name}@${version}`);
-      continue;
-    }
-
-    // 버전 미지정 → npm view로 latest 조회 후 고정
-    const latest = await getLatestVersion(name);
-    resolved.push(latest ? `${name}@${latest}` : name);
-  }
+  const batch = new PackageBatch();
+  batch.addMany(pkgs);
+  const resolved = await batch.resolve();
 
   const installCmd =
     pkgManager === 'npm'
@@ -186,198 +148,20 @@ async function updatePackageJson(scripts, destDir) {
   file.save();
 }
 
-function printError(message, suggestion = null) {
-  console.log(chalk.bgRed.white(' ERROR '), chalk.red(message));
-  if (suggestion) {
-    console.log(chalk.gray('Hint:'), chalk.cyan(suggestion));
-  }
-}
-
 // docker-compose 생성
 async function generateCompose(template, destDir) {
-  const dbType = TEMPLATE_DB[template];
-  const dbSnippet = dbType ? DB_SERVICES[dbType] : '';
-  const composeYml = BASE_COMPOSE(dbSnippet);
-  const filePath = path.join(destDir, 'docker-compose.yml');
-  await fs.writeFile(filePath, composeYml, 'utf8');
-  return dbType;
-}
+  try {
+    const composeYml = generateDockerCompose(template);
+    const filePath = path.join(destDir, 'docker-compose.yml');
+    await fs.writeFile(filePath, composeYml, 'utf8');
 
-// Swagger AST 주입
-async function injectSwaggerIntoApp(destDir) {
-  const appPath = path.join(destDir, 'src', 'app.ts');
-  if (!(await fs.pathExists(appPath))) {
-    console.log(chalk.yellow(`[inject-swagger] skip: ${appPath} not found`));
-    return;
+    const dbType = TEMPLATE_DB[template];
+    console.log(chalk.gray(`  ⎯ docker-compose.yml generated with ${dbType || 'no database'}`));
+    return dbType;
+  } catch (error) {
+    console.log(chalk.yellow(`[docker-compose] Warning: ${error.message}`));
+    return null;
   }
-
-  const project = new Project({
-    manipulationSettings: { quoteKind: QuoteKind.Single },
-    skipAddingFilesFromTsConfig: true,
-  });
-  const source = project.addSourceFileAtPath(appPath);
-
-  // ---------- 1) swagger-jsdoc, swagger-ui-express 추가 ----------
-  const importDecls = source.getImportDeclarations();
-  const findImport = mod => importDecls.find(d => d.getModuleSpecifierValue() === mod);
-  const morganImport = findImport('morgan');
-
-  // 기존 swagger imports가 있으면 제거(위치 재정렬용)
-  const swaggerJSDocImport = findImport('swagger-jsdoc');
-  const swaggerUiImport = findImport('swagger-ui-express');
-  if (swaggerJSDocImport) swaggerJSDocImport.remove();
-  if (swaggerUiImport) swaggerUiImport.remove();
-
-  // morgan 이후 인덱스 계산
-  const afterMorganIndex = morganImport
-    ? importDecls.indexOf(morganImport) + 1
-    : importDecls.length; // morgan이 없으면 맨 끝으로
-
-  // 다시 삽입(중복 방지)
-  source.insertImportDeclaration(afterMorganIndex, {
-    defaultImport: 'swaggerJSDoc',
-    moduleSpecifier: 'swagger-jsdoc',
-  });
-  source.insertImportDeclaration(afterMorganIndex + 1, {
-    defaultImport: 'swaggerUi',
-    moduleSpecifier: 'swagger-ui-express',
-  });
-
-  // ---------- 2) API_SERVER_URL env 추가 ----------
-  const envImport = source
-    .getImportDeclarations()
-    .find(d => d.getModuleSpecifierValue() === '@config/env');
-
-  if (!envImport) return; // 템플릿과 다를 수 있으니 조용히 스킵
-
-  // namespace import이면 변경하지 않음 (예: import * as env from '@config/env')
-  if (envImport.getNamespaceImport()) return;
-
-  // 이미 named import로 존재?
-  const hasNamed = envImport
-    .getNamedImports()
-    .some(n => n.getName() === 'API_SERVER_URL');
-
-  if (!hasNamed) {
-    envImport.addNamedImport('API_SERVER_URL');
-  }
-
-  // ---------- 3) App 클래스 / constructor 정리 ----------
-  let appClass = source.getClass('App') || source.getClasses()[0];
-  if (!appClass) {
-    console.log(chalk.yellow('[inject-swagger] skip: no class found in src/app.ts'));
-    source.formatText({ indentSize: 2, convertTabsToSpaces: true });
-    await source.save();
-    return;
-  }
-
-  // initializeSwagger 메서드가 있는지 확인
-  let initMethod = appClass.getInstanceMethod('initializeSwagger');
-
-  // initializeErrorHandling 메서드 (위치 기준용)
-  const errorMethod = appClass.getInstanceMethod('initializeErrorHandling');
-
-  // ---------- 4) initializeSwagger 메서드: errorHandling 바로 위에 삽입 ----------
-  if (!initMethod) {
-    const insertIndex = errorMethod ? errorMethod.getChildIndex() : undefined;
-
-    const methodStructure = {
-      name: 'initializeSwagger',
-      scope: 'private',
-      parameters: [{ name: 'apiPrefix', type: 'string' }],
-      // Writers 사용: 들여쓰기 자동 정렬
-      statements: (writer) => {
-        writer.writeLine('const options = {');
-        writer.indent(() => {
-          writer.writeLine('swaggerDefinition: {');
-          writer.indent(() => {
-            writer.writeLine(`openapi: '3.0.0',`);
-            writer.writeLine('info: {');
-            writer.indent(() => {
-              writer.writeLine(`title: 'REST API',`);
-              writer.writeLine(`version: '1.0.0',`);
-              writer.writeLine(`description: 'Example API Documentation',`);
-            });
-            writer.writeLine('},');
-            writer.writeLine('servers: [');
-            writer.indent(() => {
-              writer.writeLine('{');
-              writer.indent(() => {
-                writer.writeLine(`url: API_SERVER_URL || \`http://localhost:\${this.port}\${apiPrefix}\`,`);
-                writer.writeLine(`description: this.env === 'production' ? 'Production server' : 'Local server',`);
-              });
-              writer.writeLine('},');
-            });
-            writer.writeLine('],');
-            writer.writeLine('components: {');
-            writer.indent(() => {
-              writer.writeLine('securitySchemes: {');
-              writer.indent(() => {
-                writer.writeLine('bearerAuth: {');
-                writer.indent(() => {
-                  writer.writeLine(`type: 'http',`);
-                  writer.writeLine(`scheme: 'bearer',`);
-                  writer.writeLine(`bearerFormat: 'JWT',`);
-                });
-                writer.writeLine('},');
-              });
-              writer.writeLine('},');
-            });
-            writer.writeLine('},');
-          });
-          writer.writeLine('},');
-          writer.writeLine('apis: [\'swagger.yaml\', \'src/controllers/*.ts\'],');
-        });
-        writer.writeLine('};');
-        writer.blankLine();
-        writer.writeLine('const specs = swaggerJSDoc(options);');
-        writer.writeLine(`this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));`);
-      },
-    };
-
-    if (insertIndex !== undefined) {
-      appClass.insertMethod(insertIndex, methodStructure);
-    } else {
-      appClass.addMethod(methodStructure);
-    }
-    initMethod = appClass.getInstanceMethod('initializeSwagger');
-  }
-
-  // ---------- 5) constructor에서 initializeErrorHandling 이전에 호출 ----------
-  let ctor = appClass.getConstructors()[0];
-  if (!ctor) {
-    appClass.addConstructor({
-      statements: (writer) => {
-        writer.writeLine(`this.initializeSwagger(apiPrefix);`);
-      },
-    });
-  } else {
-    const body = ctor.getBody();
-    if (body) {
-      const stmts = body.getStatements();
-      const hasCallAlready = body
-        .getDescendantsOfKind(SyntaxKind.CallExpression)
-        .some(call => call.getExpression().getText() === 'this.initializeSwagger');
-
-      if (!hasCallAlready) {
-        // initializeErrorHandling 위치 찾기
-        let insertAt = stmts.findIndex(s => s.getText().includes('this.initializeErrorHandling('));
-        if (insertAt === -1) {
-          // initializeRoutes 다음을 우선 시도
-          const routesIdx = stmts.findIndex(s => s.getText().includes('this.initializeRoutes('));
-          insertAt = routesIdx >= 0 ? routesIdx + 1 : stmts.length;
-        }
-        body.insertStatements(insertAt, `this.initializeSwagger(apiPrefix);`);
-      }
-    }
-  }
-
-  source.formatText({
-    indentSize: 2, // 또는 4
-    convertTabsToSpaces: true,
-  });
-  await source.save();
-  console.log(chalk.green('[inject-swagger] OK: src/app.ts updated with desired ordering.'));
 }
 
 // Git init & 첫 커밋
@@ -390,21 +174,22 @@ async function gitInitAndFirstCommit(destDir) {
     await execa('git', ['commit', '-m', 'init'], { cwd: destDir });
     console.log(chalk.green('  ✓ git initialized and first commit made!'));
   } catch (e) {
-    printError('git init/commit failed', 'Check git is installed and accessible.');
+    printError(
+      new CLIError('git init/commit failed', 'git', 'Check git is installed and accessible.'),
+    );
   }
 }
 
 // ========== [메인 CLI 실행 흐름] ==========
 async function main() {
   // 1. Node 버전 체크
-  checkNodeVersion(16);
+  validateNodeVersion(CONFIG.minNodeVersion);
 
   // 2. CLI 최신버전 안내
   await checkForUpdate();
 
-  const gradientBanner =
-    '\x1B[38;2;91;192;222m📘\x1B[39m\x1B[38;2;91;192;222m \x1B[39m\x1B[38;2;91;192;222mT\x1B[39m\x1B[38;2;82;175;222my\x1B[39m\x1B[38;2;74;159;222mp\x1B[39m\x1B[38;2;66;143;210me\x1B[39m\x1B[38;2;58;128;198mS\x1B[39m\x1B[38;2;54;124;190mc\x1B[39m\x1B[38;2;52;118;180mr\x1B[39m\x1B[38;2;50;115;172mi\x1B[39m\x1B[38;2;49;120;198mp\x1B[39m\x1B[38;2;47;110;168mt\x1B[39m\x1B[38;2;45;105;160m \x1B[39m\x1B[38;2;43;100;152mE\x1B[39m\x1B[38;2;41;95;144mx\x1B[39m\x1B[38;2;39;90;136mp\x1B[39m\x1B[38;2;37;85;128mr\x1B[39m\x1B[38;2;35;80;120me\x1B[39m\x1B[38;2;33;75;112ms\x1B[39m\x1B[38;2;30;72;106ms\x1B[39m\x1B[38;2;28;70;100m \x1B[39m\x1B[38;2;26;68;96mS\x1B[39m\x1B[38;2;25;68;94mt\x1B[39m\x1B[38;2;25;69;92ma\x1B[39m\x1B[38;2;25;70;91mr\x1B[39m\x1B[38;2;25;70;150mt\x1B[39m\x1B[38;2;25;70;150me\x1B[39m\x1B[38;2;25;70;150mr\x1B[39m';
-  intro(gradientBanner);
+  const config = getEnvironmentConfig();
+  intro(config.banner.gradient);
 
   // 3. 패키지 매니저 선택 + 글로벌 설치 확인
   let pkgManager;
@@ -421,14 +206,19 @@ async function main() {
   note(`Using: ${pkgManager}`);
 
   // 4. 템플릿 선택
-  const templateDirs = (await fs.readdir(TEMPLATES)).filter(f => fs.statSync(path.join(TEMPLATES, f)).isDirectory());
-  if (templateDirs.length === 0) return printError('No templates found!');
+  const templateDirs = (await fs.readdir(CONFIG.paths.templates)).filter((f) =>
+    fs.statSync(path.join(CONFIG.paths.templates, f)).isDirectory(),
+  );
+  if (templateDirs.length === 0)
+    return printError(new CLIError('No templates found!', 'template-selection'));
 
-  const options = TEMPLATES_VALUES.filter(t => t.active && templateDirs.includes(t.value)).map(t => ({
-    label: t.name, // UI에 표시될 이름
-    value: t.value, // 선택 값
-    hint: t.desc, // 오른쪽에 표시될 설명
-  }));
+  const options = TEMPLATES_VALUES.filter((t) => t.active && templateDirs.includes(t.value)).map(
+    (t) => ({
+      label: t.name, // UI에 표시될 이름
+      value: t.value, // 선택 값
+      hint: t.desc, // 오른쪽에 표시될 설명
+    }),
+  );
 
   const template = await select({
     message: 'Choose a template:',
@@ -440,15 +230,27 @@ async function main() {
   // 5. 프로젝트명 입력 (중복체크/덮어쓰기)
   let projectName, destDir;
   while (true) {
-    projectName = await text({
+    const rawProjectName = await text({
       message: 'Enter your project name:',
-      initial: 'my-app',
-      validate: val => (!val ? 'Project name is required' : undefined),
+      initial: CONFIG.defaultProjectName,
+      validate: (val) => {
+        try {
+          validateProjectName(val);
+          return undefined;
+        } catch (error) {
+          return error.message;
+        }
+      },
     });
-    if (isCancel(projectName)) return cancel('❌ Aborted.');
-    destDir = path.resolve(process.cwd(), projectName);
+    if (isCancel(rawProjectName)) return cancel('❌ Aborted.');
+
+    projectName = sanitizeInput(rawProjectName);
+    destDir = validateProjectPath(path.resolve(process.cwd(), projectName));
+
     if (await fs.pathExists(destDir)) {
-      const overwrite = await confirm({ message: `Directory "${projectName}" already exists. Overwrite?` });
+      const overwrite = await confirm({
+        message: `Directory "${projectName}" already exists. Overwrite?`,
+      });
       if (overwrite) break;
     } else break;
   }
@@ -485,19 +287,21 @@ async function main() {
   // [1] 템플릿 복사
   const spinner = ora('Copying template...').start();
   try {
-    await fs.copy(path.join(TEMPLATES, template), destDir, { overwrite: true });
+    await fs.copy(path.join(CONFIG.paths.templates, template), destDir, { overwrite: true });
     spinner.succeed('Template copied!');
   } catch (e) {
     spinner.fail('Template copy failed!');
-    printError(e.message, 'Check templates folder and permissions.');
+    printError(new FileSystemError(e.message, destDir, 'Check templates folder and permissions.'));
     return process.exit(1);
   }
 
   // [1-1] Testing 도구를 선택한 경우에만 /src/test 예제 복사
-  const testDevtool = devtoolValues.map(val => DEVTOOLS_VALUES.find(d => d.value === val)).find(tool => tool && tool.category === 'Testing');
+  const testDevtool = devtoolValues
+    .map((val) => DEVTOOLS_VALUES.find((d) => d.value === val))
+    .find((tool) => tool && tool.category === 'Testing');
 
   if (testDevtool) {
-    const devtoolTestDir = path.join(DEVTOOLS, testDevtool.value, 'src', 'test');
+    const devtoolTestDir = path.join(CONFIG.paths.devtools, testDevtool.value, 'src', 'test');
     const projectTestDir = path.join(destDir, 'src', 'test');
     if (await fs.pathExists(devtoolTestDir)) {
       await fs.copy(devtoolTestDir, projectTestDir, { overwrite: true });
@@ -507,7 +311,7 @@ async function main() {
 
   // [2] 개발 도구 파일/패키지/스크립트/코드패치
   for (const val of devtoolValues) {
-    const tool = DEVTOOLS_VALUES.find(d => d.value === val);
+    const tool = DEVTOOLS_VALUES.find((d) => d.value === val);
     if (!tool) continue;
 
     spinner.start(`Setting up ${tool.name}...`);
@@ -545,7 +349,11 @@ async function main() {
   console.log(chalk.gray('✨ Happy hacking!\n'));
 }
 
-main().catch(err => {
-  printError('Unexpected error', err.message);
-  process.exit(1);
+main().catch((err) => {
+  if (err instanceof CLIError) {
+    printError(err);
+  } else {
+    printError(new CLIError('Unexpected error', null, err.message));
+  }
+  process.exit(err.code || 1);
 });

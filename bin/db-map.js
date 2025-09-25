@@ -11,15 +11,19 @@ export const TEMPLATE_DB = {
   typeorm: 'postgres',
 };
 
-export const DB_SERVICES = {
+const DB_SERVICES = {
   postgres: `
   pg:
     container_name: pg
-    image: postgres:14.5-alpine
+    image: postgres:16-alpine
     ports:
       - "5432:5432"
-    env_file:
-      - .env.development.local
+    environment:
+      POSTGRES_DB: \${POSTGRES_DB}
+      POSTGRES_USER: \${POSTGRES_USER}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     restart: always
     networks:
       - backend
@@ -27,29 +31,58 @@ export const DB_SERVICES = {
   mysql: `
   mysql:
     container_name: mysql
-    image: mysql:5.7
+    image: mysql:8.0
     ports:
       - "3306:3306"
-    env_file:
-      - .env.development.local
+    environment:
+      MYSQL_ROOT_PASSWORD: \${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: \${MYSQL_DATABASE}
+      MYSQL_USER: \${MYSQL_USER}
+      MYSQL_PASSWORD: \${MYSQL_PASSWORD}
+    volumes:
+      - mysqldata:/var/lib/mysql
+    restart: always
     networks:
       - backend
   `,
   mongo: `
   mongo:
     container_name: mongo
-    image: mongo
+    image: mongo:7
     ports:
       - "27017:27017"
-    env_file:
-      - .env.development.local
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: \${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: \${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: \${MONGO_DATABASE}
+    volumes:
+      - mongodata:/data/db
+    restart: always
     networks:
       - backend
   `,
 };
 
-export const BASE_COMPOSE = (dbSnippet = '') => `
-version: '3.9'
+// DB별 서비스명 맵핑
+const DB_SERVICE_NAMES = {
+  postgres: 'pg',
+  mysql: 'mysql',
+  mongo: 'mongo',
+};
+
+// 서비스 생성 헬퍼 함수
+const generateServices = (dbSnippet = '', dbType = null) => {
+  // depends_on 조건부 생성
+  const dependsOn =
+    dbType && DB_SERVICE_NAMES[dbType]
+      ? `    depends_on:
+      - ${DB_SERVICE_NAMES[dbType]}`
+      : '';
+
+  // 볼륨 설정 동적 생성
+  const volumes = dbType ? generateVolumes(dbType) : '';
+
+  return `version: '3.9'
 
 services:
   proxy:
@@ -77,19 +110,60 @@ services:
       - /app/node_modules
     env_file:
       - .env.development.local
-    depends_on:
-      - ${dbSnippet ? dbSnippet.match(/^\s*(\w+):/)?.[1] : ''}
+${dependsOn}
     restart: unless-stopped
     networks:
       - backend
 
-${dbSnippet.trim() ? dbSnippet : ''}
+${dbSnippet.trim()}
 
 networks:
   backend:
     driver: bridge
+${volumes}`;
+};
 
+// 볼륨 생성 헬퍼 함수
+function generateVolumes(dbType) {
+  const volumeMap = {
+    postgres: `
 volumes:
   pgdata:
-    driver: local
-`;
+    driver: local`,
+    mysql: `
+volumes:
+  mysqldata:
+    driver: local`,
+    mongo: `
+volumes:
+  mongodata:
+    driver: local`,
+  };
+
+  return volumeMap[dbType] || '';
+}
+
+// 설정 검증 함수
+export function validateDbTemplate(template) {
+  if (!template || !TEMPLATE_DB.hasOwnProperty(template)) {
+    throw new Error(
+      `Invalid template: ${template}. Available templates: ${Object.keys(TEMPLATE_DB).join(', ')}`,
+    );
+  }
+  return TEMPLATE_DB[template];
+}
+
+// 완전한 docker-compose 생성 함수
+export function generateDockerCompose(template) {
+  const dbType = validateDbTemplate(template);
+  if (!dbType) {
+    return generateServices();
+  }
+
+  const dbSnippet = DB_SERVICES[dbType];
+  if (!dbSnippet) {
+    throw new Error(`Database service configuration not found for: ${dbType}`);
+  }
+
+  return generateServices(dbSnippet, dbType);
+}

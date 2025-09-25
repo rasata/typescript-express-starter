@@ -142,7 +142,13 @@ export const DEVTOOLS_VALUES = [
     category: 'Linter',
     files: ['.prettierrc', 'eslint.config.cjs'],
     pkgs: [],
-    devPkgs: ['eslint@^9.33.0', 'eslint-config-prettier@^10.1.1', 'globals@^15.10.0', 'prettier@3.6.2', 'typescript-eslint@^8.39.0'],
+    devPkgs: [
+      'eslint@^9.33.0',
+      'eslint-config-prettier@^10.1.1',
+      'globals@^15.10.0',
+      'prettier@3.6.2',
+      'typescript-eslint@^8.39.0',
+    ],
     scripts: {
       lint: 'eslint --ext .ts src/',
       'lint:fix': 'npm run lint -- --fix',
@@ -159,12 +165,12 @@ export const DEVTOOLS_VALUES = [
     pkgs: [],
     devPkgs: ['oxlint@^1.14.0', '@oxlint/migrate@^1.14.0', 'prettier@3.6.2'],
     scripts: {
-      'lint': 'oxlint .',
+      lint: 'oxlint .',
       'lint:fix': 'oxlint . --fix',
-      'format': 'prettier --check .',
+      format: 'prettier --check .',
       'format:fix': 'prettier --write .',
     },
-    desc: 'Ultra-fast Rust linter for JS/TS'
+    desc: 'Ultra-fast Rust linter for JS/TS',
   },
 
   // == [Compiler] == //
@@ -202,7 +208,13 @@ export const DEVTOOLS_VALUES = [
     category: 'Testing',
     files: ['jest.config.cjs', 'jest.config.ts'],
     pkgs: [],
-    devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', '@types/jest@30.0.0', 'jest@30.0.5', 'ts-jest@29.4.1'],
+    devPkgs: [
+      '@types/supertest@6.0.3',
+      'supertest@7.1.4',
+      '@types/jest@30.0.0',
+      'jest@30.0.5',
+      'ts-jest@29.4.1',
+    ],
     scripts: {
       test: 'jest --config jest.config.cjs --watch',
       'test:e2e': 'jest --config jest.config.cjs --testPathPatterns=e2e --watch',
@@ -216,7 +228,12 @@ export const DEVTOOLS_VALUES = [
     category: 'Testing',
     files: ['vitest.config.ts'],
     pkgs: [],
-    devPkgs: ['@types/supertest@6.0.3', 'supertest@7.1.4', 'vite-tsconfig-paths@5.1.4', 'vitest@3.2.4'],
+    devPkgs: [
+      '@types/supertest@6.0.3',
+      'supertest@7.1.4',
+      'vite-tsconfig-paths@5.1.4',
+      'vitest@3.2.4',
+    ],
     scripts: {
       test: 'vitest',
       'test:unit': 'vitest src/test/unit',
@@ -292,9 +309,3 @@ export const DEVTOOLS_VALUES = [
     desc: 'CI/CD workflow automation',
   },
 ];
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export const TEMPLATES = path.join(__dirname, '../templates');
-
-export const DEVTOOLS = path.join(__dirname, '../devtools');
