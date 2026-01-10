@@ -167,18 +167,24 @@ Current template status (more coming soon!):
 | `default`  | Express + TypeScript starter   | ✅ Active |
 
 ### 🚧 **Coming Soon**
-| Template           | Description                    | Status    |
-| ------------------ | ------------------------------ | --------- |
-| `graphql`          | GraphQL + Apollo Server        | 🚧 In Dev |
-| `prisma`           | Prisma ORM integration         | 🚧 In Dev |
-| `sequelize`        | Sequelize ORM                  | 🚧 In Dev |
-| `mongoose`         | MongoDB + Mongoose ODM         | 🚧 In Dev |
-| `typeorm`          | TypeORM integration            | 🚧 In Dev |
-| `knex`             | Knex.js SQL query builder      | 🚧 In Dev |
-| `node-postgres`    | PostgreSQL with pg driver      | 🚧 In Dev |
-| `mikro-orm`        | MikroORM integration           | 🚧 In Dev |
-| `typegoose`        | TypeScript Mongoose            | 🚧 In Dev |
-| `routing-controllers` | Decorator-based controllers | 🚧 In Dev |
+
+#### **ORM/Database Integration**
+| Template           | Description                    | Priority |
+| ------------------ | ------------------------------ | -------- |
+| `prisma`           | Type-safe database client with auto-generated types         | 🔥 High  |
+| `drizzle`          | TypeScript-first ORM with zero runtime overhead              | 🔥 High  |
+| `mikro-orm`        | Data Mapper ORM pattern for TypeScript           | 🔥 High  |
+| `mongoose`         | Elegant MongoDB ODM for Node.js         | 🔥 High  |
+| `node-postgres`    | High-performance PostgreSQL native driver      | 🚧 In Dev |
+| `knex`             | Flexible SQL query builder & migrations      | 🚧 In Dev |
+| `typeorm`          | Decorator-based Active Record ORM            | 🚧 In Dev |
+| `sequelize`        | Mature Promise-based SQL ORM                  | 🚧 In Dev |
+| `typegoose`        | TypeScript-friendly Mongoose alternative            | 🚧 In Dev |
+
+#### **Architecture/Controller Style**
+| Template           | Description                    | Priority |
+| ------------------ | ------------------------------ | -------- |
+| `graphql`          | GraphQL API schema with Apollo Server        | 🚧 In Dev |
 
 > **Note**: Currently focusing on the `default` template. Additional templates will be activated as they're completed and tested.
 

@@ -138,16 +138,6 @@ tsconfig.jsnon         # TypeScript 환경 변수
 | **API 문서** | `swagger`               | OpenAPI/Swagger 문서                   |
 
 **스마트 선택**: CLI가 도구 의존성과 호환성을 자동으로 해결합니다.
-| **린터**   | `biome`, `eslint`        | 코드 포맷팅 및 린팅 (Biome은 올인원) |
-| **번들러** | `swc`, `tsup`           | 빠른 TypeScript 컴파일 및 번들링     |
-| **테스트** | `jest`, `vitest`        | 단위 및 통합 테스트 프레임워크        |
-| **프로세스** | `pm2`                   | 프로덕션 프로세스 관리               |
-| **CI/CD**  | `github`                | GitHub Actions 워크플로우               |
-| **Git 훅** | `husky`                 | 품질 관리를 위한 Pre-commit 훅       |
-| **컸테이너** | `docker`                | Docker 및 docker-compose 구성          |
-| **API 문서** | `swagger`               | OpenAPI/Swagger 문서                   |
-
-**스마트 선택**: CLI가 도구 의존성과 호환성을 자동으로 해결합니다.
 
 ## 🧩 사용 가능한 템플릿
 
@@ -159,18 +149,24 @@ tsconfig.jsnon         # TypeScript 환경 변수
 | `default`  | Express + TypeScript 스타터   | ✅ 활성 |
 
 ### 🚧 **개발 예정**
-| 템플릿           | 설명                    | 상태    |
-| ------------------ | ------------------------------ | --------- |
-| `graphql`          | GraphQL + Apollo Server        | 🚧 개발 중 |
-| `prisma`           | Prisma ORM 연동         | 🚧 개발 중 |
-| `sequelize`        | Sequelize ORM                  | 🚧 개발 중 |
-| `mongoose`         | MongoDB + Mongoose ODM         | 🚧 개발 중 |
-| `typeorm`          | TypeORM 연동            | 🚧 개발 중 |
-| `knex`             | Knex.js SQL 쿼리 빌더      | 🚧 개발 중 |
-| `node-postgres`    | pg 드라이버로 PostgreSQL      | 🚧 개발 중 |
-| `mikro-orm`        | MikroORM 연동           | 🚧 개발 중 |
-| `typegoose`        | TypeScript Mongoose            | 🚧 개발 중 |
-| `routing-controllers` | 데코레이터 기반 컨트롤러 | 🚧 개발 중 |
+
+#### **ORM/데이터베이스 연동**
+| 템플릿           | 설명                    | 우선순위 |
+| ------------------ | ------------------------------ | -------- |
+| `prisma`           | 타입 안전 데이터베이스 클라이언트, 자동 타입 생성         | 🔥 높음  |
+| `drizzle`          | 런타임 오버헤드 없는 TypeScript 우선 ORM              | 🔥 높음  |
+| `mikro-orm`        | TypeScript용 Data Mapper ORM 패턴           | 🔥 높음  |
+| `mongoose`         | Node.js용 우아한 MongoDB ODM         | 🔥 높음  |
+| `node-postgres`    | 고성능 PostgreSQL 원시 드라이버 (pg)      | 🚧 개발 중 |
+| `knex`             | 유연한 SQL 쿼리 빌더 및 마이그레이션      | 🚧 개발 중 |
+| `typeorm`          | 데코레이터 기반 Active Record ORM            | 🚧 개발 중 |
+| `sequelize`        | 성숙한 Promise 기반 SQL ORM                  | 🚧 개발 중 |
+| `typegoose`        | TypeScript 친화적 Mongoose 대안            | 🚧 개발 중 |
+
+#### **아키텍처/컨트롤러 스타일**
+| 템플릿           | 설명                    | 우선순위 |
+| ------------------ | ------------------------------ | -------- |
+| `graphql`          | Apollo Server 기반 GraphQL API 스키마        | 🚧 개발 중 |
 
 > **참고**: 현재 `default` 템플릿에 집중하고 있습니다. 추가 템플릿은 완성 및 테스트가 끝나면 활성화될 예정입니다.
 
