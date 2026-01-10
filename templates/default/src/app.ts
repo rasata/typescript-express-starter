@@ -55,14 +55,17 @@ class App {
         limit: this.env === 'production' ? 100 : 1000,
         standardHeaders: true,
         legacyHeaders: false,
-        skip: req => this.env !== 'production' || ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip ?? ''),
+        skip: (req) =>
+          this.env !== 'production' ||
+          ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.ip ?? ''),
       }),
     );
 
     this.app.use(morgan(LOG_FORMAT || 'dev', { stream }));
 
     // CORS 화이트리스트를 환경변수에서 관리
-    const allowedOrigins = CORS_ORIGIN_LIST.length > 0 ? CORS_ORIGIN_LIST : ['http://localhost:3000'];
+    const allowedOrigins =
+      CORS_ORIGIN_LIST.length > 0 ? CORS_ORIGIN_LIST : ['http://localhost:3000'];
 
     this.app.use(
       cors({
@@ -101,7 +104,7 @@ class App {
   }
 
   private initializeRoutes(routes: Routes[], apiPrefix: string) {
-    routes.forEach(route => {
+    routes.forEach((route) => {
       this.app.use(apiPrefix, route.router);
     });
   }

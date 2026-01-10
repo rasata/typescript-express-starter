@@ -214,6 +214,7 @@ export const DEVTOOLS_VALUES = [
       '@types/jest@30.0.0',
       'jest@30.0.5',
       'ts-jest@29.4.1',
+      'ts-node@10.9.2',
     ],
     scripts: {
       test: 'jest --config jest.config.cjs --watch',

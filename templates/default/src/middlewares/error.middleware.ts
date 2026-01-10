@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
-import { ZodError, type ZodIssue } from 'zod';
+import { ZodError } from 'zod';
 import { NODE_ENV } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { logger } from '@utils/logger';
@@ -37,7 +37,7 @@ const toHttpException = (err: unknown): HttpException => {
   if (err instanceof HttpException) return err;
 
   if (isZodError(err)) {
-    const data: ValidationIssue[] = err.issues.map((i: ZodIssue) => ({
+    const data: ValidationIssue[] = err.issues.map((i) => ({
       path: i.path.join('.'),
       message: i.message,
     }));
@@ -59,7 +59,12 @@ const extractStack = (err: unknown): string | undefined => {
   return undefined;
 };
 
-export const ErrorMiddleware = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
+export const ErrorMiddleware = (
+  error: unknown,
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
   const httpErr = toHttpException(error);
   const status = httpErr.status || 500;
   const message = httpErr.message || 'Something went wrong';
@@ -67,7 +72,9 @@ export const ErrorMiddleware = (error: unknown, req: Request, res: Response, _ne
   if (res.headersSent) return _next(httpErr);
 
   const stack = extractStack(httpErr);
-  logger.error(`[${req.method}] ${req.originalUrl} | ${status} | ${message}${stack ? `\n${stack}` : ''}`);
+  logger.error(
+    `[${req.method}] ${req.originalUrl} | ${status} | ${message}${stack ? `\n${stack}` : ''}`,
+  );
 
   const body: ErrorResponseBody = {
     success: false,

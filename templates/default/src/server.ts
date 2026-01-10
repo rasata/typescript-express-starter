@@ -20,7 +20,7 @@ const server = appInstance.listen(); // PORT를 쓰려면 이렇게 전달도 �
 
 // Graceful Shutdown: 운영환경에서 필수!
 if (server && typeof server.close === 'function') {
-  ['SIGINT', 'SIGTERM'].forEach(signal => {
+  ['SIGINT', 'SIGTERM'].forEach((signal) => {
     process.on(signal, () => {
       console.log(`Received ${signal}, closing server...`);
       server.close(() => {

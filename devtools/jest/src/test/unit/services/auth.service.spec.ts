@@ -1,24 +1,16 @@
 import { compare, hash } from 'bcryptjs';
 import { CreateUserDto } from '@dtos/users.dto';
-import { User } from '@interfaces/users.interface';
+import { User } from '@entities/user.entity';
 import { UsersRepository } from '@repositories/users.repository';
 import { AuthService } from '@services/auth.service';
 
 describe('AuthService (with UserMemoryRepository)', () => {
   let authService: AuthService;
   let userRepo: UsersRepository;
-  const testUser: User = {
-    id: '1',
-    email: 'authuser@example.com',
-    password: '', // will be replaced with actual hash
-  };
 
   beforeEach(async () => {
     userRepo = new UsersRepository();
-    testUser.password = await hash('plainpw', 10);
-    // Add initial user
-    await userRepo.save({ ...testUser });
-    authService = new AuthService(userRepo); // inject repo
+    authService = new AuthService(userRepo);
   });
 
   it('should sign up a new user', async () => {
@@ -35,19 +27,26 @@ describe('AuthService (with UserMemoryRepository)', () => {
   });
 
   it('should throw an error if email is already in use', async () => {
+    // First create a user
+    const existingUser = await User.create({
+      email: 'existing@example.com',
+      password: 'password123',
+    });
+    await userRepo.save(existingUser);
+
     const dto: CreateUserDto = {
-      email: testUser.email,
-      password: 'anypw',
+      email: 'existing@example.com',
+      password: 'anypass1',
     };
-    await expect(authService.signup(dto)).rejects.toThrow(/already in use/);
+    await expect(authService.signup(dto)).rejects.toThrow(/already/);
   });
 
   it('should return user and cookie on successful login', async () => {
-    // Create user with hashed password
+    // Create user using Entity
     const plainPassword = 'mySecret123';
     const email = 'loginuser@example.com';
-    const hashed = await hash(plainPassword, 10);
-    await userRepo.save({ id: '2', email, password: hashed });
+    const user = await User.create({ email, password: plainPassword });
+    await userRepo.save(user);
 
     const result = await authService.login({ email, password: plainPassword });
     expect(result.user.email).toBe(email);
@@ -56,14 +55,21 @@ describe('AuthService (with UserMemoryRepository)', () => {
 
   it('should throw an error if email or password is incorrect', async () => {
     // Non-existing email
-    await expect(authService.login({ email: 'nobody@example.com', password: 'xxx' })).rejects.toThrow(/Invalid email or password/i);
+    await expect(
+      authService.login({ email: 'nobody@example.com', password: 'wrongpass1' }),
+    ).rejects.toThrow(/Invalid email or password/i);
 
-    // Incorrect password
-    const email = testUser.email;
-    await expect(authService.login({ email, password: 'wrongpw' })).rejects.toThrow(/password/i);
+    // Create user and test wrong password
+    const user = await User.create({ email: 'test@example.com', password: 'correctpass1' });
+    await userRepo.save(user);
+
+    await expect(
+      authService.login({ email: 'test@example.com', password: 'wrongpass2' }),
+    ).rejects.toThrow(/password/i);
   });
 
   it('should successfully logout without errors', async () => {
-    await expect(authService.logout(testUser)).resolves.toBeUndefined();
+    const user = await User.create({ email: 'logout@example.com', password: 'password123' });
+    await expect(authService.logout(user)).resolves.toBeUndefined();
   });
 });

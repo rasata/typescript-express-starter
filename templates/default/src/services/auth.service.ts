@@ -1,10 +1,9 @@
-import { hash, compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { injectable, inject } from 'tsyringe';
 import { NODE_ENV, SECRET_KEY } from '@config/env';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
-import { User } from '@interfaces/users.interface';
+import { User, type UserCreateData } from '@entities/user.entity';
 import { UsersRepository } from '@repositories/users.repository';
 import type { IUsersRepository } from '@repositories/users.repository';
 
@@ -26,25 +25,30 @@ export class AuthService {
   }
 
   private createCookie(tokenData: TokenData): string {
-    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn}; Path=/; SameSite=Lax;${NODE_ENV === 'production' ? ' Secure;' : ''}`;
+    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${
+      tokenData.expiresIn
+    }; Path=/; SameSite=Lax;${NODE_ENV === 'production' ? ' Secure;' : ''}`;
   }
 
-  public async signup(userData: User): Promise<User> {
+  public async signup(userData: UserCreateData): Promise<User> {
     const findUser = await this.usersRepository.findByEmail(userData.email);
     if (findUser) throw new HttpException(409, `Email is already in use`);
 
-    const hashedPassword = await hash(userData.password, 10);
-    const newUser: User = { id: String(Date.now()), email: userData.email, password: hashedPassword };
-
+    // Entity 클래스의 팩토리 메서드로 생성 (모든 검증이 자동 처리됨)
+    const newUser = await User.create(userData);
     await this.usersRepository.save(newUser);
     return newUser;
   }
 
-  public async login(loginData: User): Promise<{ cookie: string; user: User }> {
+  public async login(loginData: {
+    email: string;
+    password: string;
+  }): Promise<{ cookie: string; user: User }> {
     const findUser = await this.usersRepository.findByEmail(loginData.email);
     if (!findUser) throw new HttpException(401, `Invalid email or password.`);
 
-    const isPasswordMatching = await compare(loginData.password, findUser.password);
+    // Entity의 도메인 메서드로 패스워드 검증
+    const isPasswordMatching = await findUser.verifyPassword(loginData.password);
     if (!isPasswordMatching) throw new HttpException(401, 'Password is incorrect');
 
     const tokenData = this.createToken(findUser);

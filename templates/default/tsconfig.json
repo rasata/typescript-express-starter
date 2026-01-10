@@ -15,6 +15,7 @@
       "@config/*": ["config/*"],
       "@controllers/*": ["controllers/*"],
       "@dtos/*": ["dtos/*"],
+      "@entities/*": ["entities/*"],
       "@exceptions/*": ["exceptions/*"],
       "@interfaces/*": ["interfaces/*"],
       "@middlewares/*": ["middlewares/*"],

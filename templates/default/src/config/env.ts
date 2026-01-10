@@ -74,5 +74,5 @@ export const API_SERVER_URL = env.API_SERVER_URL;
 // CORS Origins를 배열로도 제공 (없으면 [])
 export const CORS_ORIGIN_LIST =
   env.CORS_ORIGINS?.split(',')
-    .map(s => s.trim())
+    .map((s) => s.trim())
     .filter(Boolean) ?? [];

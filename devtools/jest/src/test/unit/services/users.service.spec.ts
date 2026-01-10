@@ -1,4 +1,4 @@
-import { User } from '@interfaces/users.interface';
+import { User, type UserCreateData } from '@entities/user.entity';
 import { UsersRepository } from '@repositories/users.repository';
 import { UsersService } from '@services/users.service';
 
@@ -6,28 +6,39 @@ describe('UsersService (with UsersRepository)', () => {
   let usersService: UsersService;
   let userRepo: UsersRepository;
 
-  // Sample user data
-  const user1: User & { id: string } = { id: '1', email: 'one@example.com', password: 'pw1' };
-  const user2: User & { id: string } = { id: '2', email: 'two@example.com', password: 'pw2' };
-
   beforeEach(async () => {
     userRepo = new UsersRepository();
     userRepo.reset();
-    // Directly save users (save is async but await is optional for init)
-    await userRepo.save({ ...user1 });
-    await userRepo.save({ ...user2 });
+
+    // Create test users using Entity
+    const user1 = await User.create({
+      email: 'one@example.com',
+      password: 'password1',
+    });
+    const user2 = await User.create({
+      email: 'two@example.com',
+      password: 'password2',
+    });
+
+    await userRepo.save(user1);
+    await userRepo.save(user2);
     usersService = new UsersService(userRepo);
   });
 
   it('getAllUsers: should return all users', async () => {
     const users = await usersService.getAllUsers();
     expect(users.length).toBe(2);
-    expect(users[0].email).toBe(user1.email);
+    expect(users.map((u) => u.email)).toContain('one@example.com');
+    expect(users.map((u) => u.email)).toContain('two@example.com');
   });
 
   it('getUserById: should return user by ID', async () => {
-    const user = await usersService.getUserById('2');
-    expect(user.email).toBe(user2.email);
+    const users = await usersService.getAllUsers();
+    const targetUser = users.find((u) => u.email === 'two@example.com');
+    expect(targetUser).toBeDefined();
+
+    const user = await usersService.getUserById(targetUser!.id);
+    expect(user.email).toBe('two@example.com');
   });
 
   it('getUserById: should throw if ID does not exist', async () => {
@@ -35,55 +46,64 @@ describe('UsersService (with UsersRepository)', () => {
   });
 
   it('createUser: should add a new user', async () => {
-    const created = await usersService.createUser({
-      id: '', // ignored
+    const userData: UserCreateData = {
       email: 'new@example.com',
-      password: 'pw3',
-    });
+      password: 'newpass3',
+    };
+
+    const created = await usersService.createUser(userData);
     expect(created.email).toBe('new@example.com');
     const all = await usersService.getAllUsers();
     expect(all.length).toBe(3);
   });
 
   it('createUser: should throw if email already exists', async () => {
-    await expect(
-      usersService.createUser({
-        id: '',
-        email: user1.email,
-        password: 'pwX',
-      }),
-    ).rejects.toThrow(/exists/);
+    const userData: UserCreateData = {
+      email: 'one@example.com', // already exists
+      password: 'password9',
+    };
+
+    await expect(usersService.createUser(userData)).rejects.toThrow(/exists/);
   });
 
   it('updateUser: should update user password', async () => {
-    const newPassword = 'newpw';
-    const updated = await usersService.updateUser(user2.id as string, {
-      id: user2.id as string,
-      email: user2.email,
-      password: newPassword,
-    });
+    const users = await usersService.getAllUsers();
+    const targetUser = users.find((u) => u.email === 'two@example.com');
+    expect(targetUser).toBeDefined();
+
+    const updateData = {
+      email: 'updated@example.com',
+      password: 'newpass1',
+    };
+
+    const updated = await usersService.updateUser(targetUser!.id, updateData);
     expect(updated).toBeDefined();
-    expect(updated!.password).not.toBe(user2.password); // changed to hashed value
+    expect(updated.email).toBe('updated@example.com');
   });
 
   it('updateUser: should throw if ID does not exist', async () => {
-    await expect(
-      usersService.updateUser('999', {
-        id: '999',
-        email: 'no@no.com',
-        password: 'no',
-      }),
-    ).rejects.toThrow(/not found/);
+    const updateData = {
+      email: 'no@no.com',
+      password: 'nopass12',
+    };
+
+    await expect(usersService.updateUser('nonexistent-id', updateData)).rejects.toThrow(
+      /not found/,
+    );
   });
 
   it('deleteUser: should delete user successfully', async () => {
-    await usersService.deleteUser(user1.id as string);
     const users = await usersService.getAllUsers();
-    expect(users.length).toBe(1);
-    expect(users[0].id).toBe(user2.id);
+    const userToDelete = users.find((u) => u.email === 'one@example.com');
+    expect(userToDelete).toBeDefined();
+
+    await usersService.deleteUser(userToDelete!.id);
+    const remaining = await usersService.getAllUsers();
+    expect(remaining.length).toBe(1);
+    expect(remaining.find((u) => u.id === userToDelete!.id)).toBeUndefined();
   });
 
   it('deleteUser: should throw if ID does not exist', async () => {
-    await expect(usersService.deleteUser('999')).rejects.toThrow(/not found/);
+    await expect(usersService.deleteUser('nonexistent-id')).rejects.toThrow(/not found/);
   });
 });

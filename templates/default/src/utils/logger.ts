@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync } from 'fs';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import pino from 'pino';
 import { LOG_DIR, LOG_LEVEL, NODE_ENV } from '@config/env';
 
@@ -8,21 +8,22 @@ const isProd = NODE_ENV === 'production';
 const logRoot = LOG_DIR || 'logs';
 const logLevel = LOG_LEVEL || 'info';
 
-// 프로젝트 루트(package.json) 기준으로 /logs 고정
-const findPackageRoot = (startDir: string): string => {
-  let dir = startDir;
-  while (true) {
-    if (existsSync(join(dir, 'package.json'))) return dir;
-    const parent = dirname(dir);
-    if (parent === dir) return startDir; // fallback
-    dir = parent;
-  }
-};
+// 현재 런타임 위치(프로젝트 실행 디렉토리)에 logs 폴더 생성
+const projectRoot = process.cwd(); // 현재 프로세스 실행 디렉토리
+const logDir = join(projectRoot, logRoot);
 
-// 로깅용 폴더 생성
-const appRoot = findPackageRoot(__dirname);
-const logDir = join(appRoot, logRoot);
-if (!existsSync(logDir)) mkdirSync(logDir, { recursive: true });
+// 로그 디렉토리 생성 (에러 핸들링 포함)
+try {
+  if (!existsSync(logDir)) {
+    mkdirSync(logDir, { recursive: true });
+    console.log(`[Logger Init] Created log directory: ${logDir}`);
+  } else {
+    console.log(`[Logger Init] Log directory already exists: ${logDir}`);
+  }
+} catch (error) {
+  console.error(`[Logger Init] Failed to create log directory: ${logDir}`, error);
+  throw error;
+}
 
 // 파일 로깅용 경로
 const prodFile = join(logDir, 'app');

@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { injectable, inject } from 'tsyringe';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { User } from '@interfaces/users.interface';
+import { type UserCreateData } from '@entities/user.entity';
 import { AuthService } from '@services/auth.service';
 import { asyncHandler } from '@utils/asyncHandler';
 
@@ -10,18 +10,18 @@ export class AuthController {
   constructor(@inject(AuthService) private readonly authService: AuthService) {}
 
   public signUp = asyncHandler(async (req: Request, res: Response) => {
-    const userData: User = req.body;
+    const userData: UserCreateData = req.body;
     const signUpUserData = await this.authService.signup(userData);
 
-    res.status(201).json({ data: signUpUserData, message: 'signup' });
+    res.status(201).json({ data: signUpUserData.toResponse(), message: 'signup' });
   });
 
   public logIn = asyncHandler(async (req: Request, res: Response) => {
-    const loginData: User = req.body;
+    const loginData: { email: string; password: string } = req.body;
     const { cookie, user } = await this.authService.login(loginData);
 
     res.setHeader('Set-Cookie', [cookie]);
-    res.status(200).json({ data: user, message: 'login' });
+    res.status(200).json({ data: user.toResponse(), message: 'login' });
   });
 
   public logOut = asyncHandler(async (req: Request, res: Response) => {
