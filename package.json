@@ -1,6 +1,6 @@
 {
   "name": "typescript-express-starter",
-  "version": "10.2.1",
+  "version": "11.0.0-alpha.1",
   "description": "Quick and Easy TypeScript Express Starter",
   "author": "AGUMON <ljlm0402@gmail.com>",
   "license": "MIT",
@@ -29,27 +29,40 @@
     "nginx",
     "swc"
   ],
-  "main": "bin/cli.js",
+  "type": "module",
+  "main": "bin/starter.js",
   "bin": {
-    "typescript-express-starter": "bin/cli.js"
+    "typescript-express-starter": "bin/starter.js"
   },
   "scripts": {
-    "start": "node bin/cli.js"
+    "start": "node bin/starter.js"
   },
   "dependencies": {
-    "chalk": "^4.1.2",
-    "edit-json-file": "^1.5.0",
-    "gitignore": "^0.6.0",
-    "inquirer": "^6.5.2",
+    "@clack/prompts": "^0.11.0",
+    "chalk": "^5.6.2",
+    "cli-progress": "^3.12.0",
+    "edit-json-file": "^1.8.1",
+    "execa": "^9.6.1",
+    "fs-extra": "^11.3.3",
+    "gitignore": "^0.7.0",
+    "inquirer": "^12.11.1",
     "ncp": "^2.0.0",
-    "ora": "^4.0.3"
+    "ora": "^8.2.0",
+    "recast": "^0.23.11"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.28.5",
+    "@types/node": "^24.10.6",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
+    "ts-morph": "^26.0.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">= 10.13.0",
-    "npm": ">= 6.11.0"
+    "node": ">= 16.13.0",
+    "npm": ">= 9.11.0"
   },
   "repository": {
     "type": "git",

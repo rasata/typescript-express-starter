@@ -108,3 +108,14 @@ package-lock.json
 
 # VScode file
 .vscode
+
+# .github 아래는 기본적으로 전부 무시
+.github/*
+
+# 하지만 아래 둘은 포함(무시 해제)
+!.github/ISSUE_TEMPLATE/**
+!.github/workflows/**
+!.github/pull_request_template.md
+
+# Document
+docs/
