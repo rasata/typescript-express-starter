@@ -39,34 +39,34 @@
 
 ## 📝 소개
 
-**TypeScript Express Starter**는 안정적이고 확장 가능한 RESTful API 서버를 빠르게 구축할 수 있는 보일러플레이트입니다.
-Express의 유연함과 간결함에 TypeScript의 타입 안정성을 결합하여, 프로토타입 단계부터 프로덕션까지 품질과 유지보수성을 보장합니다.
+**TypeScript Express Starter**는 원하는 스택 구성으로 프로덕션 준비된 TypeScript Express 프로젝트를 생성하는 대화형 CLI 도구입니다.
 
-- 깔끔한 아키텍처와 모듈 구조
+처음부터 시작하는 대신, 이 CLI는 다양한 데이터베이스 연동, 개발 도구, 배포 구성을 포함한 포괄적인 프로젝트 생성기를 제공합니다. 10개 이상의 템플릿 중 선택하고 몇 분 안에 개발 워크플로우를 맞춤 설정할 수 있습니다.
 
-- 기본 내장 보안, 로깅, 유효성 검사, 개발 도구
+- **대화형 설정**: 데이터베이스, ORM, 린터, 테스트 프레임워크 등을 선택
+- **프로덕션 준비**: Docker, PM2, NGINX 구성 포함
+- **개발자 경험**: 핫 리로드, 테스트, 린팅, 포맷팅이 미리 구성됨
+- **다양한 스택**: 10개 이상의 데이터베이스/ORM 조합 지원
 
-- 빠른 개발과 안정적인 배포 환경 지원
+## 💎 CLI 주요 기능
 
-## 💎 주요 기능
+- 🎯 **대화형 설정** — 스마트 CLI로 프로젝트 구성을 안내
 
-- ⚡ **TypeScript + Express** — 최신 JavaScript와 완전한 타입 안정성 제공
+- 🗄️ **다양한 데이터베이스 옵션** — Prisma, Sequelize, TypeORM, Mongoose, Knex 등
 
-- 📜 **API 문서** — Swagger/OpenAPI를 기본 제공
+- 🛠️ **개발 도구** — ESLint, Biome, Jest, Vitest, Docker, PM2 중 선택
 
-- 🛡 **보안** — Helmet, CORS, HPP, 요청 속도 제한(rate limiting) 기본 포함
+- 📱 **템플릿 선택** — 10개 이상의 사전 구성된 프로젝트 템플릿
 
-- 🧩 **유효성 검사** — Zod 기반의 스키마 런타임 유효성 검사
+- ⚡ **자동 구성** — 의존성, 스크립트, 설정이 자동으로 설정됨
 
-- 🔗 **의존성 주입** — tsyringe를 활용한 경량 DI 지원
+- 🔧 **스마트 의존성** — 도구 호환성 및 요구사항 자동 해결
 
-- 🗄 **데이터베이스 연동** — Sequelize, Prisma, Mongoose, TypeORM, Knex, Drizzle 등 지원
+- 📦 **패키지 매니저 지원** — npm, pnpm, yarn 모두 지원
 
-- 🛠 **개발 도구** — ESLint, Prettier, Jest, Docker, PM2, NGINX, Makefile 포함
+- 🚀 **제로 설정 시작** — 생성된 프로젝트가 즉시 동작
 
-- 🧱 **모듈형 아키텍처** — 손쉽게 확장 및 유지보수 가능
-
-- 🚀 **프로덕션 준비 완료** — Docker, PM2, NGINX 지원
+- 🎨 **커스터마이징 가능** — 자신만의 템플릿과 개발 도구 추가
 
 ## ⚡️ 빠른 시작
 
@@ -74,19 +74,27 @@ Express의 유연함과 간결함에 TypeScript의 타입 안정성을 결합하
 # 전역 설치
 npm install -g typescript-express-starter
 
-# 새 프로젝트 생성
+# 대화형 CLI 실행
 typescript-express-starter
-cd my-app
 
-# 개발 모드 실행
+# 프롬프트에 따라 다음을 선택:
+# 1. 패키지 매니저 선택 (npm/pnpm/yarn)
+# 2. 프로젝트 템플릿 선택 (default/prisma/sequelize/등)
+# 3. 프로젝트 이름 입력
+# 4. 개발 도구 선택 (린팅/테스트/도커/등)
+
+# 프로젝트로 이동
+cd your-project-name
+
+# 개발 서버 시작
 npm run dev
 ```
 
-- 앱 접속: http://localhost:3000/
-
-- 자동 생성된 API 문서: http://localhost:3000/api-docs
-
-### 샘플 영상
+**생성된 프로젝트 기능:**
+- 🌐 Express 서버: `http://localhost:3000/`
+- 📚 자동 생성된 API 문서: `http://localhost:3000/api-docs`
+- 🔄 nodemon을 통한 핫 리로드
+- 🧪 테스트 설정 포함
 
 ## 📂 프로젝트 구조
 
@@ -114,62 +122,76 @@ swagger.yaml           # Swagger API 문서 정의
 tsconfig.jsnon         # TypeScript 환경 변수
 ```
 
-## 🛠 개발 도구(Devtools) 유형
+## 🛠 사용 가능한 개발 도구
 
-| 구분                   | 도구 / 설정 파일              | 설명                                    |
-| ---------------------- | ----------------------------- | --------------------------------------- |
-| **코드 포맷터 / 린터** | `biome`, `prettier`, `eslint` | 코드 포맷팅 및 린팅 규칙 설정           |
-| **빌드 / 번들러**      | `swc`, `tsup`                 | 빌드 및 번들링 설정                     |
-| **테스트**             | `jest`, `vitest`              | 단위/통합 테스트 프레임워크             |
-| **프로세스 매니저**    | `pm2`                         | Node.js 프로세스 관리 및 모니터링       |
-| **CI/CD**              | `github`                      | GitHub Actions 워크플로우 설정          |
-| **Git 훅**             | `husky`                       | 커밋/푸시 전 린트 및 테스트 실행        |
-| **컨테이너화**         | `docker`                      | Docker 및 docker-compose 배포 환경 설정 |
+프로젝트 설정 중 다음 카테고리에서 선택할 수 있습니다:
 
-> 이 표를 통해 각 도구의 용도와 역할을 한눈에 파악할 수 있습니다.
+| 카테고리   | 사용 가능한 도구        | 설명                                    |
+| ---------- | ------------------------ | ------------------------------------------- |
+| **린터**   | `biome`, `eslint`        | 코드 포맷팅 및 린팅 (Biome은 올인원) |
+| **번들러** | `swc`, `tsup`           | 빠른 TypeScript 컴파일 및 번들링     |
+| **테스트** | `jest`, `vitest`        | 단위 및 통합 테스트 프레임워크        |
+| **프로세스** | `pm2`                   | 프로덕션 프로세스 관리               |
+| **CI/CD**  | `github`                | GitHub Actions 워크플로우               |
+| **Git 훅** | `husky`                 | 품질 관리를 위한 Pre-commit 훅       |
+| **컨테이너** | `docker`                | Docker 및 docker-compose 구성          |
+| **API 문서** | `swagger`               | OpenAPI/Swagger 문서                   |
 
-## 🧩 템플릿 선택
+**스마트 선택**: CLI가 도구 의존성과 호환성을 자동으로 해결합니다.
+| **린터**   | `biome`, `eslint`        | 코드 포맷팅 및 린팅 (Biome은 올인원) |
+| **번들러** | `swc`, `tsup`           | 빠른 TypeScript 컴파일 및 번들링     |
+| **테스트** | `jest`, `vitest`        | 단위 및 통합 테스트 프레임워크        |
+| **프로세스** | `pm2`                   | 프로덕션 프로세스 관리               |
+| **CI/CD**  | `github`                | GitHub Actions 워크플로우               |
+| **Git 훅** | `husky`                 | 품질 관리를 위한 Pre-commit 훅       |
+| **컸테이너** | `docker`                | Docker 및 docker-compose 구성          |
+| **API 문서** | `swagger`               | OpenAPI/Swagger 문서                   |
 
-CLI를 통해 원하는 스택을 선택하여 프로젝트를 생성할 수 있습니다.
+**스마트 선택**: CLI가 도구 의존성과 호환성을 자동으로 해결합니다.
 
-| 템플릿        | 스택 / 통합 기능             |
-| ------------- | ---------------------------- |
-| Default       | Express + TypeScript         |
-| Sequelize     | Sequelize ORM                |
-| Mongoose      | MongoDB ODM (Mongoose)       |
-| TypeORM       | TypeORM                      |
-| Prisma        | Prisma ORM                   |
-| Knex          | SQL Query Builder            |
-| GraphQL       | GraphQL 지원                 |
-| Typegoose     | TS 친화적인 Mongoose         |
-| Mikro ORM     | 멀티 DB 지원 Data Mapper ORM |
-| Node Postgres | PostgreSQL 드라이버 (pg)     |
-| Drizzle       | Drizzle                      |
+## 🧩 사용 가능한 템플릿
 
-## 🤔 포지셔닝: 각 프레임워크 사용에 적합한 상황
+현재 템플릿 상태 (더 많은 템플릿 추가 예정!):
 
-| 기준           | TypeScript Express Starter                                   | NestJS                                       |
-| -------------- | ------------------------------------------------------------ | -------------------------------------------- |
-| 학습 곡선      | ✅ 낮음 — Express에 익숙하다면 바로 사용 가능                | 높음 — OOP/DI/데코레이터 학습 필요           |
-| 유연성         | ✅ 매우 높음 — 스택의 모든 부분을 자유롭게 커스터마이징 가능 | 컨벤션 기반, 구조가 정해져 있음              |
-| 모듈성         | 미들웨어 & 모듈 패턴                                         | 🌟 강력한 내장 모듈 시스템                   |
-| 타입 안정성    | 완전한 TypeScript 지원                                       | 완전한 TypeScript 지원                       |
-| 테스트         | ✅ Jest & Vitest 지원 — 원하는 방식 선택 가능                | Jest E2E 테스트 환경 내장                    |
-| 확장성         | ✅ 빠른 프로토타이핑 → 중규모 애플리케이션에 적합            | 🌟 대규모 엔터프라이즈 애플리케이션에 최적화 |
-| DI 프레임워크  | 경량 tsyringe — 최소한의 오버헤드                            | 🌟 기능이 풍부한 내장 DI 컨테이너            |
-| 최적 사용 사례 | ✅ 마이크로서비스, MVP, 빠른 개발 속도                       | 🌟 복잡하고 대규모의 엔터프라이즈 환경       |
+### ✅ **현재 사용 가능**
+| 템플릿   | 설명                        | 상태 |
+| ---------- | ------------------------------ | ------ |
+| `default`  | Express + TypeScript 스타터   | ✅ 활성 |
 
-## 📑 권장 커밋 메시지
+### 🚧 **개발 예정**
+| 템플릿           | 설명                    | 상태    |
+| ------------------ | ------------------------------ | --------- |
+| `graphql`          | GraphQL + Apollo Server        | 🚧 개발 중 |
+| `prisma`           | Prisma ORM 연동         | 🚧 개발 중 |
+| `sequelize`        | Sequelize ORM                  | 🚧 개발 중 |
+| `mongoose`         | MongoDB + Mongoose ODM         | 🚧 개발 중 |
+| `typeorm`          | TypeORM 연동            | 🚧 개발 중 |
+| `knex`             | Knex.js SQL 쿼리 빌더      | 🚧 개발 중 |
+| `node-postgres`    | pg 드라이버로 PostgreSQL      | 🚧 개발 중 |
+| `mikro-orm`        | MikroORM 연동           | 🚧 개발 중 |
+| `typegoose`        | TypeScript Mongoose            | 🚧 개발 중 |
+| `routing-controllers` | 데코레이터 기반 컨트롤러 | 🚧 개발 중 |
 
-| 상황             | 커밋 메시지         |
-| ---------------- | ------------------- |
-| 기능 추가        | ✨ 기능 추가        |
-| 버그 수정        | 🐞 버그 수정        |
-| 코드 리팩토링    | 🛠 코드 리팩토링    |
-| 패키지 설치      | 📦 패키지 설치      |
-| 문서 수정        | 📚 문서 수정        |
-| 버전 업데이트    | 🌼 버전 업데이트    |
-| 신규 템플릿 추가 | 🎉 신규 템플릿 추가 |
+> **참고**: 현재 `default` 템플릿에 집중하고 있습니다. 추가 템플릿은 완성 및 테스트가 끝나면 활성화될 예정입니다.
+
+## 🤔 이 CLI를 사용하는 이유?
+
+### vs. 수동 설정
+| 측면           | 수동 설정                      | TypeScript Express Starter CLI        |
+| ---------------- | --------------------------------- | ------------------------------------- |
+| **시간**         | 🔴 수 시간의 구성 작업          | ✅ 2-3분 대화형 설정      |
+| **구성** | 🔴 수동 의존성 관리    | ✅ 자동 해결, 호환 버전  |
+| **모범 사례** | 🔴 연구 필요            | ✅ 사전 구성된 업계 표준  |
+| **일관성**  | 🔴 개발자마다 다름           | ✅ 표준화된 프로젝트 구조     |
+| **업데이트**      | 🔴 수동 유지보수             | ✅ CLI 업데이트로 새 기능 제공     |
+
+### vs. 다른 생성기
+| 기능          | TypeScript Express Starter | 다른 생성기 |
+| ---------------- | -------------------------- | ---------------- |
+| **데이터베이스 선택** | ✅ 10개 이상 옵션 계획       | 제한된 옵션  |
+| **도구 선택**  | ✅ 믹스 앤 매치 개발 도구    | 고정된 스택      |
+| **TypeScript 우선** | ✅ TypeScript를 위해 제작    | 주로 JS 우선   |
+| **프로덕션 준비** | ✅ Docker, PM2 포함    | 기본 설정      |
 
 ## 📄 라이선스
 

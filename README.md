@@ -56,35 +56,34 @@
 
 ## 📝 Introduction
 
-**TypeScript Express Starter** provides a robust starting point for building secure, scalable, and maintainable RESTful APIs.
+**TypeScript Express Starter** is an interactive CLI tool that generates production-ready TypeScript Express projects with your preferred stack configuration.
 
-It blends the flexibility and simplicity of Express with TypeScript’s type safety, supporting rapid development without compromising code quality or maintainability.
+Instead of starting from scratch, this CLI provides a comprehensive project generator with multiple database integrations, development tools, and deployment configurations. Choose from 10+ templates and customize your development workflow in minutes.
 
-- Clean architecture and modular structure
+- **Interactive Setup**: Choose database, ORM, linter, testing framework, and more
+- **Production Ready**: Docker, PM2, NGINX configurations included
+- **Developer Experience**: Hot reload, testing, linting, and formatting pre-configured
+- **Multiple Stacks**: Support for 10+ database/ORM combinations
 
-- Built-in security, logging, validation, and developer tooling
+## 💎 CLI Features
 
-- Instantly ready for both prototyping and production
+- 🎯 **Interactive Setup** — Smart CLI with guided project configuration
 
-## 💎 Features
+- 🗄️ **Multiple Database Options** — Prisma, Sequelize, TypeORM, Mongoose, Knex, and more
 
-- ⚡ **TypeScript + Express** — Modern JS with full type safety
+- 🛠️ **Development Tools** — Choose from ESLint, Biome, Jest, Vitest, Docker, PM2
 
-- 📜 **API Docs** — Swagger/OpenAPI ready out-of-the-box
+- 📱 **Template Selection** — 10+ pre-configured project templates
 
-- 🛡 **Security** — Helmet, CORS, HPP, rate limiting
+- ⚡ **Auto Configuration** — Dependencies, scripts, and configs automatically setup
 
-- 🧩 **Validation** — Zod schema-based runtime validation
+- 🔧 **Smart Dependencies** — Tool compatibility and requirement resolution
 
-- 🔗 **Dependency Injection** — Lightweight DI with tsyringe
+- 📦 **Package Manager Agnostic** — Works with npm, pnpm, or yarn
 
-- 🗄 **Database Integrations** — Sequelize, Prisma, Mongoose, TypeORM, Knex, Drizzle, etc.
+- 🚀 **Zero Config Start** — Generated projects work immediately
 
-- 🛠 **Developer Tools** — ESLint, Prettier, Jest, Docker, PM2, NGINX, Makefile
-
-- 🧱 **Modular Architecture** — Easily extendable and maintainable
-
-- 🚀 **Production Ready** — Docker, PM2, NGINX support
+- 🎨 **Customizable** — Add your own templates and development tools
 
 ## ⚡️ Quick Start
 
@@ -92,105 +91,115 @@ It blends the flexibility and simplicity of Express with TypeScript’s type saf
 # Install globally
 npm install -g typescript-express-starter
 
-# Scaffold a new project
+# Run the interactive CLI
 typescript-express-starter
-cd my-app
 
-# Run in development mode
+# Follow the prompts to:
+# 1. Choose package manager (npm/pnpm/yarn)
+# 2. Select project template (default/prisma/sequelize/etc.)
+# 3. Enter project name
+# 4. Pick development tools (linting/testing/docker/etc.)
+
+# Navigate to your project
+cd your-project-name
+
+# Start development server
 npm run dev
 ```
 
-- Access the app: http://localhost:3000/
+**Generated Project Features:**
+- 🌐 Express server: `http://localhost:3000/`
+- 📚 Auto-generated API docs: `http://localhost:3000/api-docs`
+- 🔄 Hot reload with nodemon
+- 🧪 Testing setup included
 
-- Auto-generated API docs: http://localhost:3000/api-docs
+## 📂 Generated Project Structure
 
-### Example
-
-## 📂 Project Structure
+When you create a new project, the CLI generates this structure:
 
 ```bash
-src/
- ├── config/           # Configuration files, environment settings
- ├── controllers/      # Request handling & response logic
- ├── dtos/             # Data Transfer Objects for request/response
- ├── exceptions/       # Custom exception classes
- ├── interfaces/       # TypeScript interfaces and type definitions
- ├── middlewares/      # Middlewares (logging, auth, error handling, etc.)
- ├── repositories/     # Database access logic
- ├── routes/           # API route definitions
- ├── services/         # Business logic
- ├── utils/            # Utility/helper functions
- ├── app.ts            # Express app initialization
- └── server.ts         # Server entry point
-
-.env                   # Default environment variables
-.env.development.local # Development-specific variables
-.env.production.local  # Production-specific variables
-.env.test.local        # Test-specific variables
-nodemon.json           # Nodemon variables
-swagger.yaml           # Swagger API documentation
-tsconfig.jsnon         # TypeScript variables
+your-project/
+├── src/
+│   ├── config/           # Configuration files, environment settings
+│   ├── controllers/      # Request handling & response logic
+│   ├── dtos/             # Data Transfer Objects for request/response
+│   ├── entities/         # Database entities/models (if ORM selected)
+│   ├── exceptions/       # Custom exception classes
+│   ├── interfaces/       # TypeScript interfaces and type definitions
+│   ├── middlewares/      # Middlewares (logging, auth, error handling)
+│   ├── repositories/     # Database access logic
+│   ├── routes/           # API route definitions
+│   ├── services/         # Business logic
+│   ├── utils/            # Utility/helper functions
+│   ├── app.ts            # Express app initialization
+│   └── server.ts         # Server entry point
+├── .env*                 # Environment variables (multiple stages)
+├── nodemon.json          # Development server configuration
+├── package.json          # Dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
+└── docker-compose.yml    # Docker setup (if selected)
 ```
 
-## 🛠 Devtools Types
+## 🛠 Development Tools Available
 
-| Category                    | Tools / Configs               | Description                                  |
-| --------------------------- | ----------------------------- | -------------------------------------------- |
-| **Code Formatter / Linter** | `biome`, `prettier`, `eslint` | Code formatting & linting rules              |
-| **Build / Bundler**         | `swc`, `tsup`                 | Build & bundling configuration               |
-| **Testing**                 | `jest`, `vitest`              | Unit & integration testing frameworks        |
-| **Process Manager**         | `pm2`                         | Manage and monitor Node.js processes         |
-| **CI/CD**                   | `github`                      | GitHub Actions workflow settings             |
-| **Git Hooks**               | `husky`                       | Pre-commit / pre-push hooks for lint/test    |
-| **Containerization**        | `docker`                      | Docker & docker-compose setup for deployment |
+Choose from these categories during project setup:
 
-> This categorization helps developers quickly understand what each tool is used for without checking every folder.
+| Category      | Available Tools          | Description                                     |
+| ------------- | ------------------------ | ----------------------------------------------- |
+| **Linter**    | `biome`, `eslint`        | Code formatting & linting (Biome is all-in-one) |
+| **Bundler**   | `swc`, `tsup`           | Fast TypeScript compilation and bundling       |
+| **Testing**   | `jest`, `vitest`        | Unit & integration testing frameworks          |
+| **Process**   | `pm2`                   | Production process management                   |
+| **CI/CD**     | `github`                | GitHub Actions workflows                        |
+| **Git Hooks** | `husky`                 | Pre-commit hooks for quality control           |
+| **Container** | `docker`                | Docker & docker-compose configuration          |
+| **API Docs**  | `swagger`               | OpenAPI/Swagger documentation                  |
 
-## 🧩 Template Choices
+**Smart Selection**: The CLI automatically resolves tool dependencies and compatibility.
 
-Choose your preferred stack during setup!
-Support for major databases and patterns via CLI:
+## 🧩 Available Templates
 
-| Template      | Stack / Integration        |
-| ------------- | -------------------------- |
-| Default       | Express + TypeScript       |
-| Sequelize     | Sequelize ORM              |
-| Mongoose      | MongoDB ODM (Mongoose)     |
-| TypeORM       | TypeORM                    |
-| Prisma        | Prisma ORM                 |
-| Knex          | SQL Query Builder          |
-| GraphQL       | GraphQL support            |
-| Typegoose     | TS-friendly Mongoose       |
-| Mikro ORM     | Data Mapper ORM (multi-DB) |
-| Node Postgres | PostgreSQL driver (pg)     |
-| Drizzle       | Drizzle                    |
+Current template status (more coming soon!):
 
-> More templates are regularly added and updated.
+### ✅ **Currently Available**
+| Template   | Description                    | Status |
+| ---------- | ------------------------------ | ------ |
+| `default`  | Express + TypeScript starter   | ✅ Active |
 
-## 🤔 Positioning: When to Use Each
+### 🚧 **Coming Soon**
+| Template           | Description                    | Status    |
+| ------------------ | ------------------------------ | --------- |
+| `graphql`          | GraphQL + Apollo Server        | 🚧 In Dev |
+| `prisma`           | Prisma ORM integration         | 🚧 In Dev |
+| `sequelize`        | Sequelize ORM                  | 🚧 In Dev |
+| `mongoose`         | MongoDB + Mongoose ODM         | 🚧 In Dev |
+| `typeorm`          | TypeORM integration            | 🚧 In Dev |
+| `knex`             | Knex.js SQL query builder      | 🚧 In Dev |
+| `node-postgres`    | PostgreSQL with pg driver      | 🚧 In Dev |
+| `mikro-orm`        | MikroORM integration           | 🚧 In Dev |
+| `typegoose`        | TypeScript Mongoose            | 🚧 In Dev |
+| `routing-controllers` | Decorator-based controllers | 🚧 In Dev |
 
-| Criteria       | TypeScript Express Starter                      | NestJS                                    |
-| -------------- | ----------------------------------------------- | ----------------------------------------- |
-| Learning Curve | ✅ Low — easy for anyone familiar with Express  | Higher — requires OOP/DI/Decorators       |
-| Flexibility    | ✅ Maximum — customize any part of the stack    | Convention-based, opinionated structure   |
-| Modularity     | Middleware & modular pattern                    | 🌟 Strong built-in module system          |
-| Type Safety    | Full TypeScript support                         | Full TypeScript support                   |
-| Testing        | ✅ Supports Jest & Vitest — flexible choice     | Built-in Jest E2E setup                   |
-| Scale          | ✅ Fast prototyping → mid-size apps             | 🌟 Large-scale enterprise apps            |
-| DI Framework   | Lightweight tsyringe — minimal overhead         | 🌟 Full-featured DI container             |
-| Best Fit       | ✅ Microservices, quick MVPs, developer agility | 🌟 Complex, enterprise-grade applications |
+> **Note**: Currently focusing on the `default` template. Additional templates will be activated as they're completed and tested.
 
-## 📑 Recommended Commit Message
+## 🤔 Why Use This CLI?
 
-| When            | Commit Message     |
-| --------------- | ------------------ |
-| Add Feature     | ✨ Add Feature     |
-| Fix Bug         | 🐞 Fix Bug         |
-| Refactor Code   | 🛠 Refactor Code   |
-| Install Package | 📦 Install Package |
-| Fix Readme      | 📚 Fix Readme      |
-| Update Version  | 🌼 Update Version  |
-| New Template    | 🎉 New Template    |
+### vs. Manual Setup
+| Aspect           | Manual Setup                      | TypeScript Express Starter CLI        |
+| ---------------- | --------------------------------- | ------------------------------------- |
+| **Time**         | 🔴 Hours of configuration          | ✅ 2-3 minutes interactive setup      |
+| **Configuration** | 🔴 Manual dependency management    | ✅ Auto-resolved, compatible versions  |
+| **Best Practices** | 🔴 Research required            | ✅ Pre-configured industry standards  |
+| **Consistency**  | 🔴 Varies by developer           | ✅ Standardized project structure     |
+| **Updates**      | 🔴 Manual maintenance             | ✅ CLI updates bring new features     |
+
+### vs. Other Generators
+| Feature          | TypeScript Express Starter | Other Generators |
+| ---------------- | -------------------------- | ---------------- |
+| **Database Choice** | ✅ 10+ options planned       | Limited options  |
+| **Tool Selection**  | ✅ Mix & match dev tools    | Fixed stack      |
+| **TypeScript First** | ✅ Built for TypeScript    | Often JS-first   |
+| **Production Ready** | ✅ Docker, PM2 included    | Basic setup      |
 
 ## 📄 License
 
