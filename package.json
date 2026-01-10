@@ -1,6 +1,6 @@
 {
   "name": "typescript-express-starter",
-  "version": "11.0.0",
+  "version": "11.0.1",
   "description": "Quick and Easy TypeScript Express Starter",
   "author": "AGUMON <ljlm0402@gmail.com>",
   "license": "MIT",
@@ -48,14 +48,14 @@
     "inquirer": "^12.11.1",
     "ncp": "^2.0.0",
     "ora": "^8.2.0",
-    "recast": "^0.23.11"
+    "recast": "^0.23.11",
+    "ts-morph": "^26.0.0"
   },
   "devDependencies": {
     "@babel/parser": "^7.28.5",
     "@types/node": "^24.10.6",
     "eslint": "^9.39.2",
-    "prettier": "^3.7.4",
-    "ts-morph": "^26.0.0"
+    "prettier": "^3.7.4"
   },
   "publishConfig": {
     "access": "public"
